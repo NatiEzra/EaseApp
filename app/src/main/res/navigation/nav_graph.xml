@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/feedFragment">
+
+    <fragment
+        android:id="@+id/feedFragment"
+        android:name="com.example.ease.ui.posts.FeedFragment"
+        android:label="Feed" >
+        <action
+            android:id="@+id/action_feedFragment_to_addPostFragment"
+            app:destination="@id/addPostFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_myProfileFragment"
+            app:destination="@id/myProfileFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_articlesFragment"
+            app:destination="@id/articlesFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_myPostsFragment"
+            app:destination="@id/myPostsFragment" />
+        <action
+            android:id="@+id/action_feedFragment_to_mapFragmentContainer"
+            app:destination="@id/mapFragmentContainer" />
+        <action
+            android:id="@+id/action_feedFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/addPostFragment"
+        android:name="com.example.ease.ui.posts.addPostFragment"
+        android:label="Add Post">
+        <argument
+            android:name="isEdit"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="postId"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_addPostFragment_to_articlesFragment"
+            app:destination="@id/articlesFragment" />
+        <action
+            android:id="@+id/action_addPostFragment_to_myPostsFragment"
+            app:destination="@id/myPostsFragment" />
+        <action
+            android:id="@+id/action_addPostFragment_to_myProfileFragment"
+            app:destination="@id/myProfileFragment" />
+        <action
+            android:id="@+id/action_addPostFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
+        <action
+            android:id="@+id/action_addPostFragment_to_mapFragmentContainer"
+            app:destination="@id/mapFragmentContainer" />
+        <action
+            android:id="@+id/action_addPostFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/myPostsFragment"
+        android:name="com.example.ease.ui.posts.MyPostsFragment"
+        android:label="My Posts" >
+        <action
+            android:id="@+id/action_myPostsFragment_to_addPostFragment"
+            app:destination="@id/addPostFragment" />
+        <action
+            android:id="@+id/action_myPostsFragment_to_articlesFragment"
+            app:destination="@id/articlesFragment" />
+        <action
+            android:id="@+id/action_myPostsFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
+        <action
+            android:id="@+id/action_myPostsFragment_to_mapFragmentContainer"
+            app:destination="@id/mapFragmentContainer" />
+        <action
+            android:id="@+id/action_myPostsFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/myProfileFragment"
+        android:name="com.example.ease.ui.auth.myProfileFragment"
+        android:label="My Profile" >
+        <action
+            android:id="@+id/action_myProfileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_myProfileFragment_to_myPostsFragment"
+            app:destination="@id/myPostsFragment" />
+        <action
+            android:id="@+id/action_myProfileFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
+        <action
+            android:id="@+id/action_myProfileFragment_to_addPostFragment"
+            app:destination="@id/addPostFragment" />
+        <action
+            android:id="@+id/action_myProfileFragment_to_articlesFragment"
+            app:destination="@id/articlesFragment" />
+        <action
+            android:id="@+id/action_myProfileFragment_to_mapFragmentContainer"
+            app:destination="@id/mapFragmentContainer" />
+        <action
+            android:id="@+id/action_myProfileFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/articlesFragment"
+        android:name="com.example.ease.ui.rest_apis.articlesFragment"
+        android:label="Articles" >
+        <action
+            android:id="@+id/action_articlesFragment_to_addPostFragment"
+            app:destination="@id/addPostFragment" />
+        <action
+            android:id="@+id/action_articlesFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
+        <action
+            android:id="@+id/action_articlesFragment_to_myProfileFragment"
+            app:destination="@id/myProfileFragment" />
+        <action
+            android:id="@+id/action_articlesFragment_to_myPostsFragment"
+            app:destination="@id/myPostsFragment" />
+        <action
+            android:id="@+id/action_articlesFragment_to_mapFragmentContainer"
+            app:destination="@id/mapFragmentContainer" />
+        <action
+            android:id="@+id/action_articlesFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.ease.ui.auth.editProfileFragment"
+        android:label="Edit Profile" >
+        <action
+            android:id="@+id/action_editProfileFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
+        <action
+            android:id="@+id/action_editProfileFragment_to_myProfileFragment"
+            app:destination="@id/myProfileFragment" />
+        <action
+            android:id="@+id/action_editProfileFragment_to_myPostsFragment"
+            app:destination="@id/myPostsFragment" />
+        <action
+            android:id="@+id/action_editProfileFragment_to_addPostFragment"
+            app:destination="@id/addPostFragment" />
+        <action
+            android:id="@+id/action_editProfileFragment_to_articlesFragment"
+            app:destination="@id/articlesFragment" />
+        <action
+            android:id="@+id/action_editProfileFragment_to_mapFragmentContainer"
+            app:destination="@id/mapFragmentContainer" />
+        <action
+            android:id="@+id/action_editProfileFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.example.ease.ui.rest_apis.MapFragment"
+        android:label="MapFragment" >
+        <action
+            android:id="@+id/action_mapFragment_to_myProfileFragment"
+            app:destination="@id/myProfileFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_addPostFragment"
+            app:destination="@id/addPostFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_feedFragment"
+            app:destination="@id/feedFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_articlesFragment"
+            app:destination="@id/articlesFragment" />
+        <action
+            android:id="@+id/action_mapFragment_to_myPostsFragment"
+            app:destination="@id/myPostsFragment" />
+    </fragment>
+
+</navigation>

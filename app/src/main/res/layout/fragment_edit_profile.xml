@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:colorBackground">
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:colorBackground"
+    android:layoutDirection="ltr"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:gravity="center_horizontal">
+
+        <!-- כותרת -->
+        <TextView
+            android:id="@+id/profileTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="My Profile"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="?android:textColorPrimary"
+            android:gravity="center"
+            android:layout_marginBottom="16dp" />
+
+        <!-- תמונת פרופיל -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp">
+
+            <!-- תמונת פרופיל -->
+            <ImageView
+                android:id="@+id/profileImage"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/account"
+                android:scaleType="centerCrop"
+                android:layout_marginBottom="24dp"
+                />
+
+            <!-- אייקון עריכה -->
+            <ImageView
+                android:id="@+id/editIcon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="bottom|end"
+                android:background="?android:colorBackground"
+                android:elevation="4dp"
+                android:padding="4dp"
+                android:src="@drawable/account_edit_outline" />
+        </FrameLayout>
+
+        <!-- שם -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Name"
+            android:textSize="16sp"
+            android:textColor="?android:textColorSecondary" />
+
+        <EditText
+            android:id="@+id/editProfileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name"
+            android:background="?android:attr/editTextBackground"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Verify Current Password"
+            android:textSize="16sp"
+            android:textColor="?android:textColorSecondary" />
+
+        <EditText
+            android:id="@+id/editProfileVerifyPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter your current password"
+            android:inputType="textPassword"
+            android:background="?android:attr/editTextBackground"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- סיסמה -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Password"
+            android:textSize="16sp"
+            android:textColor="?android:textColorSecondary" />
+
+        <EditText
+            android:id="@+id/editProfilePassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:background="?android:attr/editTextBackground"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- אימות סיסמה -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confirm Password"
+            android:textSize="16sp"
+            android:textColor="?android:textColorSecondary" />
+
+        <EditText
+            android:id="@+id/editProfileConfirmPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Confirm password"
+            android:inputType="textPassword"
+            android:background="?android:attr/editTextBackground"
+            android:padding="12dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- כפתור שמירה -->
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save"
+            android:backgroundTint="#AED6F1"
+            android:textColor="#21618C"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/CancelButtonEditProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="#FADBD8"
+            android:drawablePadding="8dp"
+            android:text="Cancel"
+            android:textColor="#C0392B" />
+    </LinearLayout>
+</ScrollView>
+
+    <ProgressBar
+        android:id="@+id/editProfileProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+</FrameLayout>
