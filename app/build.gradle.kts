@@ -86,7 +86,7 @@ dependencies {
     implementation(libs.wasabeef.picasso.transformations)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
-    implementation ("com.github.bumptech.glide:glide:4.12.0")
+    implementation (libs.glide)
     implementation (libs.androidx.recyclerview)
     implementation (libs.androidx.cardview)
     implementation (libs.okhttp)
@@ -99,6 +99,9 @@ dependencies {
     implementation (libs.androidx.room.runtime)
     kapt (libs.androidx.room.compiler)
     implementation (libs.androidx.room.ktx)
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
+
 
 
 

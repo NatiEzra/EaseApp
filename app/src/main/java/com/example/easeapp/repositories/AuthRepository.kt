@@ -1,7 +1,13 @@
 package com.example.ease.repositories
 
+import android.telecom.Call
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.example.easeapp.model.requests.LoginRequest
+import com.example.easeapp.model.requests.LoginResponse
+import com.example.easeapp.model.requests.RetrofitClient
+import okhttp3.Callback
+import retrofit2.Response
 
 class AuthRepository {
     companion object{
@@ -34,15 +40,23 @@ class AuthRepository {
             }
     }
     fun loginUser(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
+        val request = LoginRequest(email, password)
+
+        RetrofitClient.instance.login(request).enqueue(object : retrofit2.Callback<LoginResponse> {
+            override fun onResponse(call: retrofit2.Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful && response.body() != null) {
                     onComplete(true, null)
                 } else {
-                    onComplete(false, "Password or email is incorrect")
+                    onComplete(false, response.errorBody()?.string() ?: "Login failed")
                 }
             }
+
+            override fun onFailure(call: retrofit2.Call<LoginResponse>, t: Throwable) {
+                onComplete(false, t.message ?: "Network error")
+            }
+        })
     }
+
 
     fun signOut() {
         auth.signOut()
