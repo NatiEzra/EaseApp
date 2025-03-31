@@ -23,6 +23,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.ease.ui.activities.MainActivity
 import com.example.ease.R
 import com.example.ease.model.User
@@ -166,7 +167,8 @@ class editProfileFragment : Fragment() {
             result.onSuccess {
                 Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
                 (activity as? MainActivity)?.refreshProfile()
-                (activity as? MainActivity)?.homePageButtonClicked()
+                findNavController().navigate(R.id.homePageFragment)
+
             }.onFailure {
                 Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
             }
