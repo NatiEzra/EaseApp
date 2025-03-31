@@ -94,16 +94,14 @@ class RegisterFragment : Fragment() {
         profileImage = view.findViewById<ImageView>(R.id.profile_image_register)
         authViewModel.authState.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
-                // Registration successful → now create Firestore user
-                val bitmap = if (addedProfileImage) {
-                    (profileImage.drawable as BitmapDrawable).bitmap
-                } else null
+                val progressBar = view?.findViewById<ProgressBar>(R.id.registerProgressBar)
+                progressBar?.visibility = View.GONE
+                Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
+                (activity as? LoginRegisterActivity)?.onBackButtonClicked(view)
 
-                userViewModel.createUser(
-                    name.text.toString(),
-                    emailField.text.toString(),
-                    bitmap
-                )
+
+
+
             }
             result.onFailure {
                 Toast.makeText(context, it.message ?: "Registration failed", Toast.LENGTH_SHORT).show()
@@ -111,15 +109,7 @@ class RegisterFragment : Fragment() {
             }
         }
 
-        userViewModel.createUserResult.observe(viewLifecycleOwner) { result ->
-            view?.findViewById<ProgressBar>(R.id.registerProgressBar)?.visibility = View.GONE
-            result.onSuccess {
-                (activity as? LoginRegisterActivity)?.navigateToHome()
-            }
-            result.onFailure {
-                Toast.makeText(context, it.message ?: "Firestore user creation failed", Toast.LENGTH_SHORT).show()
-            }
-        }
+
 
         setupListeners()
 
@@ -180,7 +170,7 @@ class RegisterFragment : Fragment() {
                 return@setOnClickListener
             }
             progressBar?.visibility = View.VISIBLE
-            authViewModel.register(email, password)
+            authViewModel.register(requireContext(), username, email, password, bitmap)
 
         }
     }

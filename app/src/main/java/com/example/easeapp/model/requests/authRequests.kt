@@ -14,3 +14,22 @@ data class LoginResponse(
     val isAuthenticated: Boolean,
     val likedPosts: List<String>
 )
+
+data class RegisterRequest(
+    val username: String,
+    val email: String,
+    val password: String
+)
+
+data class RegisterResponse(
+    val message: String,
+    val user: RegisteredUser
+)
+
+data class RegisteredUser(
+    val username: String,
+    val email: String,
+    val _id: String,
+    val profilePicture: String,
+    val role: String
+)

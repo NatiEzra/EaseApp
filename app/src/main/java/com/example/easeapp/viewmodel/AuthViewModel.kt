@@ -1,5 +1,7 @@
 package com.example.ease.viewmodel
 
+import android.content.Context
+import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -29,9 +31,9 @@ class AuthViewModel(
     }
 
 
-    fun register(email: String, password: String) {
+    fun register(context: Context, username: String, email: String, password: String, bitmap: Bitmap?) {
         viewModelScope.launch {
-            authRepo.registerUser(email, password) { success, error ->
+            authRepo.registerUser(context, username, email, password, bitmap) { success, error ->
                 if (success) {
                     _authState.postValue(Result.success(true))
                 } else {

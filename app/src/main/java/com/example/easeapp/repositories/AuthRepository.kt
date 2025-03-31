@@ -1,13 +1,21 @@
 package com.example.ease.repositories
 
-import android.telecom.Call
+import android.content.Context
+import android.graphics.Bitmap
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.example.easeapp.model.requests.LoginRequest
 import com.example.easeapp.model.requests.LoginResponse
+import com.example.easeapp.model.requests.RegisterResponse
 import com.example.easeapp.model.requests.RetrofitClient
-import okhttp3.Callback
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.Response
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.File
 
 class AuthRepository {
     companion object{
@@ -18,16 +26,50 @@ class AuthRepository {
     val currentUser: FirebaseUser?
         get() = auth.currentUser
 
-    fun registerUser(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    onComplete(true, null)
+    fun registerUser(context: Context, username: String, email: String, password: String, bitmap: Bitmap?, onComplete: (Boolean, String?) -> Unit) {
+        val imageFile = bitmap?.let { bitmapToFile(it, context) }
+
+        val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
+        val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
+        val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
+
+        val call = if (imageFile != null) {
+            val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+            val multipartBody = MultipartBody.Part.createFormData("profilePicture", imageFile.name, requestFile)
+
+            RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, multipartBody)
+        } else {
+            // Send an empty multipart form field with an empty filename and body
+            val emptyRequestFile = "".toRequestBody("text/plain".toMediaTypeOrNull())
+            val emptyPart = MultipartBody.Part.createFormData("profilePicture", "", emptyRequestFile)
+
+            RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, emptyPart)
+        }
+
+        call.enqueue(object : Callback<RegisterResponse> {
+            override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {
+                if (response.isSuccessful) {
+                    onComplete(true, response.body()?.message)
                 } else {
-                    onComplete(false, task.exception?.localizedMessage)
+                    onComplete(false, response.errorBody()?.string() ?: "Unknown error")
                 }
             }
+
+            override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
+                onComplete(false, t.message ?: "Network error")
+            }
+        })
+
     }
+
+    fun bitmapToFile(bitmap: Bitmap, context: Context, fileName: String = "temp_image.jpg"): File {
+        val file = File(context.cacheDir, fileName)
+        file.outputStream().use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        }
+        return file
+    }
+
 
     fun authenticate(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {
         auth.signInWithEmailAndPassword(email, password)
@@ -42,7 +84,7 @@ class AuthRepository {
     fun loginUser(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {
         val request = LoginRequest(email, password)
 
-        RetrofitClient.instance.login(request).enqueue(object : retrofit2.Callback<LoginResponse> {
+        RetrofitClient.authApi.login(request).enqueue(object : retrofit2.Callback<LoginResponse> {
             override fun onResponse(call: retrofit2.Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful && response.body() != null) {
                     onComplete(true, null)
