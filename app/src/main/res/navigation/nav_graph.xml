@@ -32,5 +32,22 @@
         android:id="@+id/editProfileFragment"
         android:name="com.example.ease.ui.auth.editProfileFragment"
         android:label="Edit Profile" />
+    <fragment
+        android:id="@+id/chatSelectorFragment"
+        android:name="com.example.ease.ui.chat.ChatSelectorFragment"
+        android:label="Chat Selector" />
+
+    <fragment
+        android:id="@+id/chatRoutineFragment"
+        android:name="com.example.ease.ui.chat.ChatRoutineFragment"
+        android:label="Chat Routine" />
+    <fragment
+        android:id="@+id/emergencyChatFragment"
+        android:name="com.example.ease.ui.chat.EmergencyChatFragment"
+        android:label="Emergency Chat" />
+
+
+
+
 
 </navigation>

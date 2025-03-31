@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.ease.R
 
 class HomePageFragment : Fragment() {
@@ -66,8 +67,7 @@ class HomePageFragment : Fragment() {
     }
 
     private fun openChat() {
-        Toast.makeText(requireContext(), "Opening Chat...", Toast.LENGTH_SHORT).show()
-        // TODO: ניווט למסך Chat (כשתיצור)
+        findNavController().navigate(R.id.chatSelectorFragment)
     }
 
     private fun showInfo(title: String, message: String) {
