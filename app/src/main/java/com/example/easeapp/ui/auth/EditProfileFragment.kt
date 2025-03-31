@@ -1,6 +1,7 @@
 package com.example.ease.ui.auth
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
@@ -10,15 +11,19 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.ease.ui.activities.MainActivity
 import com.example.ease.R
 import com.example.ease.model.User
@@ -27,6 +32,7 @@ import com.example.ease.viewmodel.UserViewModel
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -36,6 +42,9 @@ private const val ARG_PARAM2 = "param2"
 
 private var cameraLauncher: ActivityResultLauncher<Void?>? = null
 private var galleryLauncher: ActivityResultLauncher<String>? = null
+private lateinit var dateTextView: TextView
+private lateinit var genderSpinner: Spinner
+
 
 
 /**
@@ -102,9 +111,22 @@ class editProfileFragment : Fragment() {
             }
             builder.show()
         }
+        val genders = listOf("Select gender", "Male", "Female", "Other")
+        val genderAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, genders)
+        genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+
         val editProfilePassword=view.findViewById<EditText>(R.id.editProfilePassword)
         val editProfileName=view.findViewById<EditText>(R.id.editProfileName)
         val editProfileConfirmPass=view.findViewById<EditText>(R.id.editProfileConfirmPassword)
+        dateTextView = view.findViewById(R.id.editProfileDateOfBirth)
+        genderSpinner = view.findViewById(R.id.editProfileGender)
+
+        dateTextView.setOnClickListener {
+            showDatePicker()
+        }
+        genderSpinner.adapter = genderAdapter
+
 
         saveButton.setOnClickListener {
 
@@ -145,7 +167,8 @@ class editProfileFragment : Fragment() {
             result.onSuccess {
                 Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
                 (activity as? MainActivity)?.refreshProfile()
-                (activity as? MainActivity)?.homePageButtonClicked()
+                findNavController().navigate(R.id.homePageFragment)
+
             }.onFailure {
                 Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
             }
@@ -176,6 +199,25 @@ class editProfileFragment : Fragment() {
 
         return view
     }
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(
+            requireContext(),
+            { _, selectedYear, selectedMonth, selectedDay ->
+                val date = String.format("%02d/%02d/%04d", selectedDay, selectedMonth + 1, selectedYear)
+                dateTextView.text = date
+            },
+            year, month, day
+        )
+
+        datePickerDialog.show()
+    }
+
+
 
     companion object {
         /**

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- צורה כחולה ברקע בצד -->
+    <ImageView
+        android:id="@+id/bgShape"
+        android:layout_width="270dp"
+        android:layout_height="238dp"
+        android:layout_marginEnd="232dp"
+        android:src="@drawable/blue_shape_template"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- כותרת -->
+    <TextView
+        android:id="@+id/homePageTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home Page"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+    <!-- קונטיינר של הכרטיסים -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardsContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp"
+        android:layout_margin="16dp"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="#F8F9FA"
+        app:layout_constraintTop_toBottomOf="@id/homePageTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- Diary -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardDiary"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                android:backgroundTint="#D8F6FF"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/cardEmergency"
+                app:layout_constraintWidth_percent="0.48">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:id="@+id/diaryIcon"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_diary" />
+
+                    <TextView
+                        android:id="@+id/diaryTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Diary"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_below="@id/diaryIcon"
+                        android:layout_marginTop="8dp" />
+
+                    <ImageView
+                        android:id="@+id/diaryInfo"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_question"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true" />
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Emergency -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardEmergency"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                android:backgroundTint="#BEE3F7"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/cardDiary"
+                app:layout_constraintWidth_percent="0.48">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:id="@+id/emergencyIcon"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_emergency" />
+
+                    <TextView
+                        android:id="@+id/emergencyTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Emergency"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_below="@id/emergencyIcon"
+                        android:layout_marginTop="8dp" />
+
+                    <ImageView
+                        android:id="@+id/emergencyInfo"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_question"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true" />
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Chat -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardChat"
+                android:layout_width="0dp"
+                android:layout_height="140dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                android:backgroundTint="#AEEBFF"
+                app:layout_constraintTop_toBottomOf="@id/cardDiary"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="16dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp">
+
+                    <ImageView
+                        android:id="@+id/chatIcon"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:src="@drawable/ic_chat" />
+
+                    <TextView
+                        android:id="@+id/chatTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chat"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:layout_below="@id/chatIcon"
+                        android:layout_marginTop="8dp" />
+
+                    <ImageView
+                        android:id="@+id/chatInfo"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_question"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentTop="true" />
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
