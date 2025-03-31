@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ease.repositories.AuthRepository
+import com.example.easeapp.model.requests.UserDetails
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
@@ -17,11 +18,15 @@ class AuthViewModel(
 
     private val _authState = MutableLiveData<Result<Boolean>>()
     val authState: LiveData<Result<Boolean>> get() = _authState
+    private val _loggedInUser = MutableLiveData<UserDetails>()
+    val loggedInUser: LiveData<UserDetails> get() = _loggedInUser
+
 
     fun login(email: String, password: String) {
         viewModelScope.launch {
-            authRepo.loginUser(email, password) { success, error ->
-                if (success) {
+            authRepo.loginUser(email, password) { success,  error, user ->
+                if (success && user is UserDetails) {
+                    _loggedInUser.postValue(user!!)
                     _authState.postValue(Result.success(true))
                 } else {
                     _authState.postValue(Result.failure(Throwable(error)))

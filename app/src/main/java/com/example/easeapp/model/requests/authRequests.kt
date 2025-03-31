@@ -1,5 +1,5 @@
 package com.example.easeapp.model.requests
-
+//LOGIN
 data class LoginRequest(
     val email: String,
     val password: String
@@ -14,7 +14,7 @@ data class LoginResponse(
     val isAuthenticated: Boolean,
     val likedPosts: List<String>
 )
-
+//REGISTER
 data class RegisterRequest(
     val username: String,
     val email: String,
@@ -33,3 +33,19 @@ data class RegisteredUser(
     val profilePicture: String,
     val role: String
 )
+
+//GET USER
+data class UserProfileResponse(
+    val user: UserDetails
+)
+
+data class UserDetails(
+    val _id: String,
+    val username: String,
+    val email: String,
+    val role: String,
+    val profilePicture: String?
+)
+
+
+

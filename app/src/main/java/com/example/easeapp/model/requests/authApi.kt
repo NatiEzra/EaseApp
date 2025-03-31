@@ -21,6 +21,7 @@ interface AuthApi {
         @Part("password") password: RequestBody,
         @Part profilePicture: MultipartBody.Part
     ): Call<RegisterResponse>
+
 }
 
 object RetrofitClient {

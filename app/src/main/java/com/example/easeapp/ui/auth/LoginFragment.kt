@@ -1,6 +1,7 @@
 package com.example.ease.ui.auth
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,12 +11,16 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.ease.ui.activities.LoginRegisterActivity
 import com.example.ease.R
+import com.example.ease.model.local.AppDatabase
+import com.example.ease.model.local.UserEntity
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.firebase.auth.FirebaseAuth
 import com.example.ease.repositories.AuthRepository
 import com.example.ease.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -89,6 +94,21 @@ class loginFragment : Fragment() {
                 Toast.makeText(requireContext(), it.message ?: "Login failed", Toast.LENGTH_SHORT).show()
             }
         }
+
+        viewModel.loggedInUser.observe(viewLifecycleOwner) { user ->
+            if (user != null) {
+                val name = user.username
+                val email = user.email
+                val image = user.profilePicture
+                lifecycleScope.launch {
+                    val userDao = AppDatabase.getInstance(requireContext()).userDao()
+                    userDao.clear()
+                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))
+                }
+                Log.d("LOGIN", "User logged in: ${user.username}")
+            }
+        }
+
 
 
         setupListeners()
