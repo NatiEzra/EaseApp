@@ -67,6 +67,7 @@ class myProfileFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
         profileImage.visibility=View.GONE
         lifecycleScope.launch {
+
             val user = userDao.getCurrentUser()
             profileName.text = user?.name ?: "Guest"
             profileEmail.text = user?.email ?: ""
