@@ -46,9 +46,9 @@
             android:id="@+id/autoMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="A psychologist will join the chat as soon as possible to assist you."
-            android:padding="12dp"
             android:background="@drawable/bg_chat_bubble"
+            android:padding="12dp"
+            android:text="A psychologist will join the chat as soon as possible to assist you."
             android:textColor="#000000" />
 
         <TextView
