@@ -48,8 +48,13 @@
     <action
         android:id="@+id/action_emergencyChatFragment_to_chatSelectorFragment"
         app:destination="@id/chatSelectorFragment" />
-
-
+    <fragment
+        android:id="@+id/emergencyPageFragment"
+        android:name="com.example.ease.ui.emergency.EmergencyPageFragment"
+        android:label="Emergency Page" />
+    <action
+        android:id="@+id/action_homePageFragment_to_emergencyPageFragment"
+        app:destination="@id/emergencyPageFragment" />
 
 
 
