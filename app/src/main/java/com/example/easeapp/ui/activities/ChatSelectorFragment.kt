@@ -44,11 +44,10 @@ class ChatSelectorFragment : Fragment() {
         }
 
         btnEmergency.setOnClickListener {
-            btnEmergency.setOnClickListener {
-                val dialog = EmergencyDialogFragment()
-                dialog.show(parentFragmentManager, "emergencyDialog")
-            }
+            val dialog = EmergencyDialogFragment()
+            dialog.show(childFragmentManager, "emergencyDialog")
         }
+
 
         backIcon.setOnClickListener {
             findNavController().navigate(R.id.homePageFragment)

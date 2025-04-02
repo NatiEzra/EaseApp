@@ -45,6 +45,10 @@
         android:id="@+id/emergencyChatFragment"
         android:name="com.example.ease.ui.chat.EmergencyChatFragment"
         android:label="Emergency Chat" />
+    <action
+        android:id="@+id/action_emergencyChatFragment_to_chatSelectorFragment"
+        app:destination="@id/chatSelectorFragment" />
+
 
 
 
