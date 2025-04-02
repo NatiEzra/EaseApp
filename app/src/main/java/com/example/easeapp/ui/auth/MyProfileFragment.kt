@@ -70,7 +70,8 @@ class myProfileFragment : Fragment() {
             val user = userDao.getCurrentUser()
             profileName.text = user?.name ?: "Guest"
             profileEmail.text = user?.email ?: ""
-            val imageUrl = user?.profileImageUrl
+            var imageUrl = user?.profileImageUrl
+            imageUrl=fixImageUrl(imageUrl.toString())
             if (imageUrl != null){
                 Picasso.get().load(imageUrl).transform(CropCircleTransformation()).into(profileImage)
             }
@@ -96,6 +97,8 @@ class myProfileFragment : Fragment() {
             }
         }*/
 
+
+
         val logOutbtn=view.findViewById<Button>(R.id.logoutButton)
         val autViewModel: AuthViewModel by viewModels()
         logOutbtn.setOnClickListener {
@@ -111,6 +114,10 @@ class myProfileFragment : Fragment() {
 
 
         return view
+    }
+
+    fun fixImageUrl(oldUrl: String): String {
+        return oldUrl.replace("http://localhost:3000", "http://10.0.2.2:3000")
     }
 
     companion object {

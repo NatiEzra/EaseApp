@@ -2,6 +2,8 @@ package com.example.ease.repositories
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
+import com.example.ease.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.example.easeapp.model.requests.LoginRequest
@@ -22,6 +24,7 @@ class AuthRepository {
         val shared = AuthRepository()
     }
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val userRepository= User.shared
 
     val currentUser: FirebaseUser?
         get() = auth.currentUser
@@ -81,20 +84,38 @@ class AuthRepository {
                 }
             }
     }
-    fun loginUser(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {
+    fun loginUser(email: String, password: String, onComplete: (Boolean, String?, Any?) -> Unit) {
         val request = LoginRequest(email, password)
 
         RetrofitClient.authApi.login(request).enqueue(object : retrofit2.Callback<LoginResponse> {
             override fun onResponse(call: retrofit2.Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful && response.body() != null) {
-                    onComplete(true, null)
+                    val loginResponse = response.body() // this is a function call
+                    val accessToken = loginResponse?.accessToken
+                    val userId = loginResponse?._id
+                    if (accessToken != null && userId != null) {
+                        userRepository.getUser(
+                            accessToken = accessToken,
+                            userId = userId,
+                            page = 1
+                        ) { success, user, error ->
+                            if (success && user != null) {
+                                onComplete(true, null, user)
+                                Log.d("USER", "Username: ${user.username}, Profile Pic: ${user.profilePicture}")
+                            } else {
+                                Log.e("ERROR", error ?: "Unknown error")
+                            }
+                        }
+                    }
+
+                    onComplete(true, null, null)
                 } else {
-                    onComplete(false, response.errorBody()?.string() ?: "Login failed")
+                    onComplete(false, response.errorBody()?.string() ?: "Login failed", null)
                 }
             }
 
             override fun onFailure(call: retrofit2.Call<LoginResponse>, t: Throwable) {
-                onComplete(false, t.message ?: "Network error")
+                onComplete(false, t.message ?: "Network error", null)
             }
         })
     }

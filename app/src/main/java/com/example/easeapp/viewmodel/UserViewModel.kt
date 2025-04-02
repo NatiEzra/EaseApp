@@ -49,9 +49,7 @@ class UserViewModel : ViewModel() {
         }
     }
     fun fetchUser() {
-        userRepo.getUser { userData ->
-            _user.postValue(userData)
-        }
+
     }
 
 }

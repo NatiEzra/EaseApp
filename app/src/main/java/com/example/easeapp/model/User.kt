@@ -3,8 +3,15 @@ package com.example.ease.model
 import android.graphics.Bitmap
 import android.util.Log
 import com.example.ease.repositories.AuthRepository
+import com.example.easeapp.model.requests.RetrofitClient
+import com.example.easeapp.model.requests.RetrofitClientUser
+import com.example.easeapp.model.requests.UserDetails
+import com.example.easeapp.model.requests.UserProfileResponse
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class User {
     var auth = AuthRepository.shared
@@ -60,27 +67,28 @@ class User {
 
     }
 
-    fun getUser(onComplete: (Map<String, Any>?) -> Unit) {
-        val userEmail = auth.currentUser?.email
-        if (userEmail != null) {
-            db.collection("users")
-                .whereEqualTo("email", userEmail)
-                .get()
-                .addOnSuccessListener { documents ->
-                    if (!documents.isEmpty) {
-                        val userDocument = documents.documents[0]
-                        val user = userDocument.data
-                        onComplete(user)
-                    } else {
-                        onComplete(null)
-                    }
+    fun getUser(
+        accessToken: String,
+        userId: String,
+        page: Int = 1,
+        onComplete: (Boolean, UserDetails?, String?) -> Unit
+    ) {
+        val authHeader = "Bearer $accessToken"
+
+        RetrofitClientUser.userApi.getUserProfile(authHeader, userId, page).enqueue(object :
+            Callback<UserProfileResponse> {
+            override fun onResponse(call: Call<UserProfileResponse>, response: Response<UserProfileResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    onComplete(true, response.body()!!.user, null)
+                } else {
+                    onComplete(false, null, response.errorBody()?.string() ?: "Failed to fetch profile")
                 }
-                .addOnFailureListener { e ->
-                    onComplete(null)
-                }
-        } else {
-            onComplete(null)
-        }
+            }
+
+            override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {
+                onComplete(false, null, t.message ?: "Network error")
+            }
+        })
     }
 
     fun getUserByEmail(email: String, onComplete: (Map<String, Any>?) -> Unit) {
@@ -101,14 +109,7 @@ class User {
             }
     }
     fun getProfileImage(onComplete: (String?) -> Unit) {
-        getUser { user ->
-            if (user != null) {
-                val image = user["image"] as? String
-                onComplete(image)
-            } else {
-                onComplete(null)
-            }
-        }
+
     }
 
     fun editUser(currentPassword: String, name: String, password: String, image: Bitmap?, onComplete: (Boolean, String?) -> Unit) {
