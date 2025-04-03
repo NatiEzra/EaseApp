@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <!-- רקע כחול -->
+    <ImageView
+        android:id="@+id/bgShape"
+        android:layout_width="270dp"
+        android:layout_height="238dp"
+        android:layout_marginEnd="232dp"
+        android:src="@drawable/blue_shape_template"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- כפתור חזור -->
+    <ImageView
+        android:id="@+id/backIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_back_arrow"
+        android:contentDescription="Back"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp" />
+
+    <!-- כפתור תפריט -->
+    <ImageView
+        android:id="@+id/menuIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_menu"
+        android:contentDescription="Menu"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp" />
+
+    <!-- כותרת -->
+    <TextView
+        android:id="@+id/routineTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Routine"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        app:layout_constraintTop_toBottomOf="@id/bgShape"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="-80dp" />
+
+    <!-- כפתור Schedule -->
+    <Button
+        android:id="@+id/btnSchedule"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:text="Schedule Meeting"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:backgroundTint="#B8E9F4"
+        app:layout_constraintTop_toBottomOf="@id/routineTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp" />
+
+    <!-- כפתור My Meeting -->
+    <Button
+        android:id="@+id/btnMyMeeting"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:text="My Meeting"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:backgroundTint="#6EA8FE"
+        app:layout_constraintTop_toBottomOf="@id/btnSchedule"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+    <!-- כפתור Join -->
+    <Button
+        android:id="@+id/btnJoinMeeting"
+        android:layout_width="0dp"
+        android:layout_height="60dp"
+        android:text="Join Meeting"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:backgroundTint="#A6F1DD"
+        app:layout_constraintTop_toBottomOf="@id/btnMyMeeting"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

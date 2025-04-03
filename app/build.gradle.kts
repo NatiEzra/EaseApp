@@ -99,6 +99,8 @@ dependencies {
     implementation (libs.androidx.room.runtime)
     kapt (libs.androidx.room.compiler)
     implementation (libs.androidx.room.ktx)
+    implementation ("io.socket:socket.io-client:2.1.0")
+
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
 

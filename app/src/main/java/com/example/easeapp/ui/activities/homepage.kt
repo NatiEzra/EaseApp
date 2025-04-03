@@ -8,7 +8,10 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.ease.R
+import androidx.navigation.fragment.findNavController
+
 
 class HomePageFragment : Fragment() {
 
@@ -61,13 +64,12 @@ class HomePageFragment : Fragment() {
     }
 
     private fun openEmergency() {
-        Toast.makeText(requireContext(), "Opening Emergency...", Toast.LENGTH_SHORT).show()
-        // TODO: ניווט למסך Emergency (כשתיצור)
+        findNavController().navigate(R.id.action_homePageFragment_to_emergencyPageFragment)
     }
 
+
     private fun openChat() {
-        Toast.makeText(requireContext(), "Opening Chat...", Toast.LENGTH_SHORT).show()
-        // TODO: ניווט למסך Chat (כשתיצור)
+        findNavController().navigate(R.id.chatSelectorFragment)
     }
 
     private fun showInfo(title: String, message: String) {

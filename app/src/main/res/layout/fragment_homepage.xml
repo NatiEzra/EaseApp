@@ -53,13 +53,13 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardDiary"
                 android:layout_width="0dp"
-                android:layout_height="140dp"
+                android:layout_height="180dp"
+                android:backgroundTint="#D8F6FF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                android:backgroundTint="#D8F6FF"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/cardEmergency"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_percent="0.48">
 
                 <RelativeLayout
@@ -77,19 +77,19 @@
                         android:id="@+id/diaryTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Diary"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
                         android:layout_below="@id/diaryIcon"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="Diary"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
                     <ImageView
                         android:id="@+id/diaryInfo"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_question"
+                        android:layout_alignParentTop="true"
                         android:layout_alignParentEnd="true"
-                        android:layout_alignParentTop="true" />
+                        android:src="@drawable/ic_question" />
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
@@ -97,13 +97,13 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardEmergency"
                 android:layout_width="0dp"
-                android:layout_height="140dp"
+                android:layout_height="180dp"
+                android:backgroundTint="#BEE3F7"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                android:backgroundTint="#BEE3F7"
-                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@id/cardDiary"
+                app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintWidth_percent="0.48">
 
                 <RelativeLayout
@@ -121,19 +121,19 @@
                         android:id="@+id/emergencyTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Emergency"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
                         android:layout_below="@id/emergencyIcon"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="Emergency"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
                     <ImageView
                         android:id="@+id/emergencyInfo"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_question"
+                        android:layout_alignParentTop="true"
                         android:layout_alignParentEnd="true"
-                        android:layout_alignParentTop="true" />
+                        android:src="@drawable/ic_question" />
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
@@ -141,14 +141,14 @@
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardChat"
                 android:layout_width="0dp"
-                android:layout_height="140dp"
+                android:layout_height="180dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#AEEBFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="2dp"
-                android:backgroundTint="#AEEBFF"
-                app:layout_constraintTop_toBottomOf="@id/cardDiary"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="16dp">
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cardDiary">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -165,19 +165,19 @@
                         android:id="@+id/chatTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Chat"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
                         android:layout_below="@id/chatIcon"
-                        android:layout_marginTop="8dp" />
+                        android:layout_marginTop="8dp"
+                        android:text="Chat"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
 
                     <ImageView
                         android:id="@+id/chatInfo"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@drawable/ic_question"
+                        android:layout_alignParentTop="true"
                         android:layout_alignParentEnd="true"
-                        android:layout_alignParentTop="true" />
+                        android:src="@drawable/ic_question" />
                 </RelativeLayout>
             </androidx.cardview.widget.CardView>
 
