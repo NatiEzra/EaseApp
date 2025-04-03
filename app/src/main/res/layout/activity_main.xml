@@ -5,53 +5,55 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Main Content -->
+    <!-- Main Content Area -->
     <RelativeLayout
         android:id="@+id/main_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="#FFFFFF">
 
-        <!-- Header -->
-        <LinearLayout
-            android:id="@+id/header"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:orientation="horizontal"
-            android:background="#FFFFFF"
-            android:gravity="center_vertical"
-            android:padding="8dp">
+        <!-- לוגו בראש הדף, במרכז -->
+        <ImageView
+            android:id="@+id/logo_image"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginTop="40dp"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/logo"
+            android:contentDescription="App Logo" />
 
-            <ImageView
-                android:id="@+id/menu_icon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_menu"
-                android:layout_marginEnd="8dp" />
+        <!-- כפתור תפריט מימין, מתחת ללוגו -->
+        <ImageView
+            android:id="@+id/menu_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_below="@id/logo_image"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_menu"
+            android:contentDescription="Open Menu" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/logo" />
-        </LinearLayout>
-
-        <!-- Fragment Navigation -->
+        <!-- אזור הניווט בין הפרגמנטים -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/nav_host_fragment"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/header"
+            android:layout_below="@id/menu_icon"
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph" />
+
     </RelativeLayout>
 
-    <!-- Side Menu -->
-<!--    <com.google.android.material.navigation.NavigationView-->
-<!--        android:id="@+id/navigation_view"-->
-<!--        android:layout_width="280dp"-->
-<!--        android:layout_height="match_parent"-->
-<!--        android:layout_gravity="start"-->
-<!--        android:background="#E3F3FC"-->
-<!--        app:menu="@menu/drawer_menu"-->
-<!--        app:headerLayout="@layout/drawer_header" />-->
+    <!-- Drawer Menu שנפתח מצד ימין -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="280dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:layout_marginTop="50dp"
+        android:background="#E3F3FC"
+        app:menu="@menu/drawer_menu"
+        app:headerLayout="@layout/drawer_header" />
+
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -27,15 +27,6 @@
             android:padding="24dp"
             android:gravity="center_horizontal">
 
-            <!-- כפתור חזרה -->
-            <ImageView
-                android:id="@+id/backButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="start"
-                android:layout_marginBottom="8dp"
-                android:src="@drawable/ic_back_arrow" />
-
             <!-- כותרת -->
             <TextView
                 android:id="@+id/profileTitle"
