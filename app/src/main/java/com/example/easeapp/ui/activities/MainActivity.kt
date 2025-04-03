@@ -30,21 +30,21 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+//            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+//            insets
+//        }
 
         navController = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)?.findNavController()
             ?: throw IllegalStateException("NavController not found")
 
         // כפתור מעבר לפרופיל (אם קיים)
-        findViewById<ImageView>(R.id.profile_icon).setOnClickListener {
-            if (navController.currentDestination?.id != R.id.myProfileFragment) {
-                navController.navigate(R.id.myProfileFragment)
-            }
-        }
+//        findViewById<ImageView>(R.id.profile_icon).setOnClickListener {
+//            if (navController.currentDestination?.id != R.id.myProfileFragment) {
+//                navController.navigate(R.id.myProfileFragment)
+//            }
+//        }
 
         // back button → חוזר למסך פרופיל
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
