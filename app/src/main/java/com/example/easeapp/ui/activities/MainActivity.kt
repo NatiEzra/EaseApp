@@ -69,19 +69,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
 
-        userViewModel.fetchUser()
-        userViewModel.user.observe(this) { user ->
-            if (user != null) {
-                val name = user["name"].toString()
-                val email = user["email"].toString()
-                val image = user["image"] as? String
-                lifecycleScope.launch {
-                    val userDao = AppDatabase.getInstance(applicationContext).userDao()
-                    userDao.clear()
-                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))
-                }
-            }
-        }
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -119,19 +107,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         finish()
     }
 
+
     fun refreshProfile() {
-        userViewModel.fetchUser()
-        userViewModel.user.observe(this) { user ->
-            if (user != null) {
-                val name = user["name"].toString()
-                val email = user["email"].toString()
-                val image = user["image"] as? String
-                lifecycleScope.launch {
-                    val userDao = AppDatabase.getInstance(applicationContext).userDao()
-                    userDao.clear()
-                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))
-                }
-            }
-        }
+
     }
 }

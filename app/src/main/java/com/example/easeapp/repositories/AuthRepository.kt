@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import com.example.ease.model.User
+import com.example.ease.model.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.example.easeapp.model.requests.LoginRequest
@@ -24,7 +25,7 @@ class AuthRepository {
         val shared = AuthRepository()
     }
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val userRepository= User.shared
+    private val userRepository= UserRepository.shared
 
     val currentUser: FirebaseUser?
         get() = auth.currentUser

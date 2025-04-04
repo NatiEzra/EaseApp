@@ -10,31 +10,25 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.http.*
 
-interface UserApi {
-    @GET("/api/users/profile")
-    fun getUserProfile(
+interface appointmentsApi {
+    @GET("/api/schedule/{doctorId}")
+    fun getAppointmentDetails(
         @Header("Authorization") token: String,
-        @Query("userId") userId: String,
-        @Query("page") page: Int,
-        @Query("limit") limit: Int = 5
-    ): Call<UserProfileResponse>
+        @Path("doctorId") doctorId: String
+    ): Call<ScheduleResponse>
 
-
-    @GET("/api/users/")
-    fun getAllUsers(
-    ): Call<List<User>>
 
 }
 
-object RetrofitClientUser {
+object RetrofitClientAppointments {
     private const val BASE_URL = "http://10.0.2.2:2999"
 
-    val userApi: UserApi by lazy {
+    val appointmentsApi:   appointmentsApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(UserApi::class.java)
+            .create(appointmentsApi::class.java)
     }
 
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.ease.repositories.AuthRepository
 import com.example.easeapp.model.requests.RetrofitClient
 import com.example.easeapp.model.requests.RetrofitClientUser
+import com.example.easeapp.model.requests.RetrofitClientUser.userApi
 import com.example.easeapp.model.requests.UserDetails
 import com.example.easeapp.model.requests.UserProfileResponse
 import com.google.firebase.firestore.ktx.firestore
@@ -12,57 +13,48 @@ import com.google.firebase.ktx.Firebase
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-
-class User {
+data class User(
+    val userId: String,
+    val username: String,
+    var profilePicture: String,
+    var role: String,
+)
+class UserRepository {
     var auth = AuthRepository.shared
+    @Volatile
+    var doctors: MutableList<User> = mutableListOf()
 
     companion object {
-        val shared = User()
+        val shared = UserRepository()
     }
+
 
     val db = Firebase.firestore
     val cloudinaryModel = CloudinaryModel()
-    fun createUser(name: String, email: String,bitmap: Bitmap?, onComplete: (Boolean, String?) -> Unit) {
-        var imageUrl: String? = null
-        if(bitmap!=null){
-            uploadImageToCloudinary(bitmap, auth.getCurrentUserEmail(), { uri ->
-                if (!uri.isNullOrBlank()) {
-                    imageUrl = uri
-                    val user = hashMapOf(
-                        "name" to name,
-                        "email" to email,
-                        "image" to imageUrl
-                    )
-                    db.collection("users")
-                        .add(user)
-                        .addOnSuccessListener { documentReference ->
-                            onComplete(true, null)
+    fun getAllDoctors( onComplete: (MutableList<User>) -> Unit){
+        userApi.getAllUsers().enqueue(object : Callback<List<User>> {
+            override fun onResponse(
+                call: Call<List<User>>,
+                response: Response<List<User>>
+            ) {
+                if (response.isSuccessful && response.body() != null) {
+                    var allUsers=response.body()!!.toMutableList()
+                    doctors= mutableListOf()
+                    allUsers.forEach { user ->
+                        if (user.role == "doctor") {
+                            doctors.add(user)
                         }
-                        .addOnFailureListener { e ->
-                            onComplete(false, e.localizedMessage)
-                        }
-
+                    }
+                    onComplete(doctors)
                 } else {
-                    onComplete(false, "Error uploading image")
+                    onComplete(mutableListOf())
                 }
-            }, { error ->
-                onComplete(false, error)
-            })
-        }
-        else{
-            val user = hashMapOf(
-                "name" to name,
-                "email" to email,
-            )
-            db.collection("users")
-                .add(user)
-                .addOnSuccessListener { documentReference ->
-                    onComplete(true, null)
-                }
-                .addOnFailureListener { e ->
-                    onComplete(false, e.localizedMessage)
-                }
-        }
+            }
+
+            override fun onFailure(call: Call<List<User>>, t: Throwable) {
+                onComplete(mutableListOf())
+            }
+        })
 
 
     }

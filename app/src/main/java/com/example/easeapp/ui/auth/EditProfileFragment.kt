@@ -148,31 +148,15 @@ class editProfileFragment : Fragment() {
                 Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
             }
             else {
-                progressBar.visibility = View.VISIBLE
-                profileImage.isDrawingCacheEnabled = true
-                profileImage.buildDrawingCache()
-                userViewModel.editUser(
-                    currentPassword.text.toString(),
-                    editProfileName.text.toString(),
-                    editProfilePassword.text.toString(),
-                    bitmap
-                )
+
+
 
 
             }
 
         }
 
-        userViewModel.editUserResult.observe(viewLifecycleOwner) { result ->
-            result.onSuccess {
-                Toast.makeText(context, "Profile updated", Toast.LENGTH_SHORT).show()
-                (activity as? MainActivity)?.refreshProfile()
-                findNavController().navigate(R.id.homePageFragment)
 
-            }.onFailure {
-                Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
         val CancelButtonEditProfile=view.findViewById<Button>(R.id.CancelButtonEditProfile)
         CancelButtonEditProfile.setOnClickListener {
             (activity as? MainActivity)?.myProfilePageButtonClicked()

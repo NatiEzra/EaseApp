@@ -36,7 +36,7 @@ class ChatRoutineFragment : Fragment() {
         }
 
         btnSchedule.setOnClickListener {
-            Toast.makeText(requireContext(), "Schedule clicked", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.scheduleRoutineMeeting)
         }
 
         btnMyMeeting.setOnClickListener {

@@ -40,7 +40,11 @@
     <fragment
         android:id="@+id/chatRoutineFragment"
         android:name="com.example.ease.ui.chat.ChatRoutineFragment"
-        android:label="Chat Routine" />
+        android:label="Chat Routine" >
+        <action
+            android:id="@+id/action_chatRoutineFragment_to_scheduleRoutineMeeting"
+            app:destination="@id/scheduleRoutineMeeting" />
+    </fragment>
     <fragment
         android:id="@+id/emergencyChatFragment"
         android:name="com.example.ease.ui.chat.EmergencyChatFragment"
@@ -55,6 +59,22 @@
     <action
         android:id="@+id/action_homePageFragment_to_emergencyPageFragment"
         app:destination="@id/emergencyPageFragment" />
+    <fragment
+        android:id="@+id/scheduleRoutineMeeting"
+        android:name="com.example.easeapp.ui.meetings.ScheduleRoutineMeeting"
+        android:label="ScheduleRoutineMeeting" >
+        <action
+            android:id="@+id/action_scheduleRoutineMeeting_to_bookingAppointmentFragment"
+            app:destination="@id/bookingAppointmentFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/bookingAppointmentFragment"
+        android:name="com.example.easeapp.ui.meetings.BookingAppointmentFragment"
+        android:label="BookingAppointmentFragment" >
+        <argument
+            android:name="doctorId"
+            app:argType="string" />
+    </fragment>
 
 
 

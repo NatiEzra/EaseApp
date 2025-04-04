@@ -118,7 +118,7 @@ class myProfileFragment : Fragment() {
     }
 
     fun fixImageUrl(oldUrl: String): String {
-        return oldUrl.replace("http://localhost:3000", "http://10.0.2.2:3000")
+        return oldUrl.replace("http://localhost:", "http://10.0.2.2:")
     }
 
     companion object {

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Booking Appointment"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Schedule Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Schedule"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Horizontal Date Picker -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/dateRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:orientation="horizontal"
+            android:overScrollMode="never"
+            android:paddingBottom="8dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#DDD"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Time Label -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Time"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Time Slots -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/timeRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:overScrollMode="never" />
+
+        <!-- Continue Button -->
+        <Button
+            android:id="@+id/continueButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Continue"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:backgroundTint="#3B5BFE"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@drawable/rounded_button_blue" />
+
+    </LinearLayout>
+</ScrollView>
