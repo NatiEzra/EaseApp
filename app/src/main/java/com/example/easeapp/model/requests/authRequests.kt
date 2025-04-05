@@ -44,8 +44,11 @@ data class UserDetails(
     val username: String,
     val email: String,
     val role: String,
-    val profilePicture: String?
-)
+    val profilePicture: String?,
+    var accessToken: String
+) {
+
+}
 
 
 

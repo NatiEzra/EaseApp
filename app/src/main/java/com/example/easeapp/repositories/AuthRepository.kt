@@ -3,6 +3,8 @@ package com.example.ease.repositories
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import androidx.core.content.ContentProviderCompat.requireContext
+import com.example.ease.base.MyApplication
 import com.example.ease.model.User
 import com.example.ease.model.UserRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -85,13 +87,20 @@ class AuthRepository {
                 }
             }
     }
-    fun loginUser(email: String, password: String, onComplete: (Boolean, String?, Any?) -> Unit) {
+    fun loginUser(context: Context, email: String, password: String, onComplete: (Boolean, String?, Any?) -> Unit) {
         val request = LoginRequest(email, password)
 
         RetrofitClient.authApi.login(request).enqueue(object : retrofit2.Callback<LoginResponse> {
             override fun onResponse(call: retrofit2.Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful && response.body() != null) {
-                    val loginResponse = response.body() // this is a function call
+
+                    val setCookieHeaders = response.headers()["Set-Cookie"]
+
+                    setCookieHeaders?.let {
+                        saveRefreshTokenLocally(context,it)
+                        saveAccessTokenLocally(context,it)
+                    }
+                    val loginResponse = response.body()
                     val accessToken = loginResponse?.accessToken
                     val userId = loginResponse?._id
                     if (accessToken != null && userId != null) {
@@ -101,6 +110,7 @@ class AuthRepository {
                             page = 1
                         ) { success, user, error ->
                             if (success && user != null) {
+                                user.accessToken=loginResponse.accessToken;
                                 onComplete(true, null, user)
                                 Log.d("USER", "Username: ${user.username}, Profile Pic: ${user.profilePicture}")
                             } else {
@@ -121,6 +131,24 @@ class AuthRepository {
         })
     }
 
+
+    fun saveRefreshTokenLocally(context: Context, cookie: String) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("refresh_token_cookie", cookie).apply()
+    }
+    fun saveAccessTokenLocally(context: Context, cookie: String) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("access_token_cookie", cookie).apply()
+    }
+
+    fun getRefreshToken(context: Context): String? {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("refresh_token_cookie", null)
+    }
+    fun getAccessToken(context: Context): String? {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("access_token_cookie", null)
+    }
 
     fun signOut() {
         auth.signOut()

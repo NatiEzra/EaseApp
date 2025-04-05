@@ -14,7 +14,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 data class User(
-    val userId: String,
+    val _id: String,
     val username: String,
     var profilePicture: String,
     var role: String,

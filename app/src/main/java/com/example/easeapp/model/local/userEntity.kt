@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 data class UserEntity(
     @PrimaryKey val email: String,
     val name: String,
-    val profileImageUrl: String? = null
+    val profileImageUrl: String? = null,
+    val accessToken: String? = null,
 )
 

@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.ease.ui.activities.LoginRegisterActivity
 import com.example.ease.R
+import com.example.ease.base.MyApplication
 import com.example.ease.model.local.AppDatabase
 import com.example.ease.model.local.UserEntity
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -100,10 +101,11 @@ class loginFragment : Fragment() {
                 val name = user.username
                 val email = user.email
                 val image = user.profilePicture
+                val accessToken= user.accessToken
                 lifecycleScope.launch {
                     val userDao = AppDatabase.getInstance(requireContext()).userDao()
                     userDao.clear()
-                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))
+                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image, accessToken = accessToken))
                 }
                 Log.d("LOGIN", "User logged in: ${user.username}")
             }
@@ -128,7 +130,7 @@ class loginFragment : Fragment() {
             if (email.isBlank() || password.isBlank()) {
                 Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
-                viewModel.login(email, password)
+                viewModel.login(requireContext(), email, password)
             }
         }
 

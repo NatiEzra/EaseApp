@@ -1,5 +1,6 @@
 package com.example.easeapp.ui.meetings
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -72,10 +73,12 @@ class BookingAppointmentFragment : Fragment() {
         return view
     }
 
-    private fun fetchAvailableTimeSlots(doctorId: String?, date: String) {
+    fun fetchAvailableTimeSlots(doctorId: String?, date: String) {
         if (doctorId == null) return
-
-        val call = RetrofitClientAppointments.appointmentsApi.getAvailableSlots(doctorId, date)
+        var accessToken= getAccessToken(requireContext())
+        accessToken = accessToken?.replace("refreshToken=", "hello, ")
+        accessToken = accessToken?.replace(";", "")
+        val call = RetrofitClientAppointments.appointmentsApi.getAvailableSlots(accessToken!!,doctorId, date)
         call.enqueue(object : Callback<AvailableSlotsResponse> {
             override fun onResponse(call: Call<AvailableSlotsResponse>, response: Response<AvailableSlotsResponse>) {
                 if (response.isSuccessful) {
@@ -91,7 +94,10 @@ class BookingAppointmentFragment : Fragment() {
             }
         })
     }
-
+    fun getAccessToken(context: Context): String? {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("access_token_cookie", null)
+    }
     private fun generateDateList() {
         val today = LocalDate.now()
         val days = mutableListOf<AppointmentDate>()

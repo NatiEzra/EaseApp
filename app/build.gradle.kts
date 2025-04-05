@@ -9,7 +9,6 @@ plugins {
     id ("kotlin-kapt")
     alias(libs.plugins.google.android.libraries.mapsplatform.secrets.gradle.plugin)
 
-
 }
 val room_version = "2.6.1"
 val secretsPropertiesFile = rootProject.file("secrets.properties")

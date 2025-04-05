@@ -11,17 +11,10 @@ import retrofit2.http.Query
 // ממשק Retrofit
 interface AppointmentsApi {
 
-    // קריאה לפרטי הרופא לפי ID
-    @GET("/api/schedule/{doctorId}")
-    fun getAppointmentDetails(
-        @Header("Authorization") token: String,
-        @Path("doctorId") doctorId: String
-    ): Call<ScheduleResponse>
-
-    // קריאה לזמנים הפנויים של רופא לפי תאריך
-    @GET("/api/schedule/available-slots")
+    @GET("/api/schedule/{doctorId}/free-slots")
     fun getAvailableSlots(
-        @Query("doctorId") doctorId: String,
+        @Header("Authorization") token: String,
+        @Path("doctorId") doctorId: String,
         @Query("date") date: String
     ): Call<AvailableSlotsResponse>
 

@@ -22,9 +22,9 @@ class AuthViewModel(
     val loggedInUser: LiveData<UserDetails> get() = _loggedInUser
 
 
-    fun login(email: String, password: String) {
+    fun login(context: Context, email: String, password: String) {
         viewModelScope.launch {
-            authRepo.loginUser(email, password) { success,  error, user ->
+            authRepo.loginUser(context, email, password) { success,  error, user ->
                 if (success && user is UserDetails) {
                     _loggedInUser.postValue(user!!)
                     _authState.postValue(Result.success(true))

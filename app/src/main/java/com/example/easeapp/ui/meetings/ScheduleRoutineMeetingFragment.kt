@@ -108,7 +108,7 @@ class ScheduleRoutineMeeting : Fragment() {
     private var param2: String? = null
     var adapter = DoctorRecycleAdapter(UserRepository.shared.doctors){ selectedDoctor ->
         val action = ScheduleRoutineMeetingDirections
-            .actionScheduleRoutineMeetingToBookingAppointmentFragment(selectedDoctor.userId)
+            .actionScheduleRoutineMeetingToBookingAppointmentFragment(selectedDoctor._id)
         findNavController().navigate(action)
     }
     var doctors: MutableList<User> = ArrayList()
@@ -129,7 +129,7 @@ class ScheduleRoutineMeeting : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        var view= inflater.inflate(R.layout.fragment_schedule_routin_meeting, container, false)
+        var view= inflater.inflate(R.layout.fragment_schedule_routine_meeting, container, false)
         userViewModel.allDoctors.observe(viewLifecycleOwner) { fetchedUsers ->
             if (fetchedUsers.size>0){
                 //view.findViewById<TextView>(R.id.noPostsTextView).visibility = View.GONE
@@ -151,7 +151,7 @@ class ScheduleRoutineMeeting : Fragment() {
         recyclerView.layoutManager = layoutManager
         adapter = DoctorRecycleAdapter(doctors) { selectedDoctor ->
             val action = ScheduleRoutineMeetingDirections
-                .actionScheduleRoutineMeetingToBookingAppointmentFragment(selectedDoctor.userId)
+                .actionScheduleRoutineMeetingToBookingAppointmentFragment(selectedDoctor._id)
             findNavController().navigate(action)
         }
         recyclerView.adapter = adapter
