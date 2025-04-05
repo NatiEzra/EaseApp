@@ -1,34 +1,44 @@
 package com.example.easeapp.model.requests
 
-import com.example.ease.model.User
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.Body
-import retrofit2.http.POST
-import okhttp3.MultipartBody
-import okhttp3.RequestBody
-import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Path
+import retrofit2.http.Query
 
-interface appointmentsApi {
+// ממשק Retrofit
+interface AppointmentsApi {
+
+    // קריאה לפרטי הרופא לפי ID
     @GET("/api/schedule/{doctorId}")
     fun getAppointmentDetails(
         @Header("Authorization") token: String,
         @Path("doctorId") doctorId: String
     ): Call<ScheduleResponse>
 
+    // קריאה לזמנים הפנויים של רופא לפי תאריך
+    @GET("/api/schedule/available-slots")
+    fun getAvailableSlots(
+        @Query("doctorId") doctorId: String,
+        @Query("date") date: String
+    ): Call<AvailableSlotsResponse>
 
 }
 
+// אובייקט Retrofit
 object RetrofitClientAppointments {
     private const val BASE_URL = "http://10.0.2.2:2999"
 
-    val appointmentsApi:   appointmentsApi by lazy {
+    val appointmentsApi: AppointmentsApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(appointmentsApi::class.java)
+            .create(AppointmentsApi::class.java)
     }
-
 }
+
+
+
