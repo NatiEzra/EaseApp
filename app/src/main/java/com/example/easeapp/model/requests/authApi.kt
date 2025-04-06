@@ -1,5 +1,7 @@
 package com.example.easeapp.model.requests
 
+import com.example.ease.repositories.RefreshRequest
+import com.example.ease.repositories.RefreshResponse
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -22,12 +24,12 @@ interface AuthApi {
         @Part profilePicture: MultipartBody.Part
     ): Call<RegisterResponse>
 
-
-
+    @POST("/auth/refresh")
+    fun refreshToken(@Body request: RefreshRequest): Call<RefreshResponse>
 }
 
 object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:2999"
+    private const val BASE_URL = "http://10.0.2.2:3000"
 
     val authApi: AuthApi by lazy {
         val retrofit = Retrofit.Builder()
