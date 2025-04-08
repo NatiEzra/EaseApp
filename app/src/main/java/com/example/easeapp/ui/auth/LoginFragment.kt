@@ -17,14 +17,10 @@ import com.example.ease.R
 import com.example.ease.model.local.AppDatabase
 import com.example.ease.model.local.UserEntity
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.firebase.auth.FirebaseAuth
-import com.example.ease.repositories.AuthRepository
 import com.example.ease.viewmodel.AuthViewModel
 import kotlinx.coroutines.launch
 
 
-// TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private const val ARG_PARAM1 = "param1"
     private const val ARG_PARAM2 = "param2"
 
@@ -39,7 +35,6 @@ class loginFragment : Fragment() {
     private lateinit var googleSignInClient: GoogleSignInClient
     private var param1: String? = null
     private var param2: String? = null
-    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     private lateinit var viewModel: AuthViewModel
 
 
@@ -97,23 +92,35 @@ class loginFragment : Fragment() {
 
         viewModel.loggedInUser.observe(viewLifecycleOwner) { user ->
             if (user != null) {
+                val _id = user._id
                 val name = user.username
                 val email = user.email
                 val image = user.profilePicture
+                val accessToken = user.accessToken
+                val phone = user.phoneNumber
+                val dob = user.dateOfBirth
+                val gender = user.gender
+
                 lifecycleScope.launch {
                     val userDao = AppDatabase.getInstance(requireContext()).userDao()
                     userDao.clear()
-                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))
+                    userDao.insert(
+                        UserEntity(
+                            _id = _id,
+                            email = email,
+                            name = name,
+                            profileImageUrl = image,
+                            accessToken = accessToken,
+                            phoneNumber = phone,
+                            dateOfBirth = dob,
+                            gender = gender
+                        )
+                    )
                 }
-                Log.d("LOGIN", "User logged in: ${user.username}")
+                Log.d("LOGIN", "User logged in: ${user.username}, phone: $phone, dob: $dob, gender: $gender")
             }
         }
-
-
-
         setupListeners()
-
-
     }
 
 
@@ -128,7 +135,7 @@ class loginFragment : Fragment() {
             if (email.isBlank() || password.isBlank()) {
                 Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
             } else {
-                viewModel.login(email, password)
+                viewModel.login(requireContext(), email, password)
             }
         }
 

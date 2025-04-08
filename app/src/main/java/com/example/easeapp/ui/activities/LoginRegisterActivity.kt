@@ -1,4 +1,5 @@
 package com.example.ease.ui.activities
+
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -9,23 +10,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.ease.R
-import com.example.ease.repositories.AuthRepository
 import com.example.ease.ui.auth.RegisterFragment
 import com.example.ease.ui.auth.loginFragment
 import com.example.ease.viewmodel.AuthViewModel
-import com.example.ease.viewmodel.UserViewModel
-
 
 class LoginRegisterActivity : AppCompatActivity() {
     private val authViewModel: AuthViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-            if (authViewModel.isUserLoggedIn()) {
+            if (authViewModel.isUserLoggedIn(this)) {
                 navigateToHome()
                 return
             }
-
 
             enableEdgeToEdge()
             setContentView(R.layout.activity_login_register)
@@ -34,7 +32,7 @@ class LoginRegisterActivity : AppCompatActivity() {
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
                 insets
             }
-                 supportFragmentManager.beginTransaction().apply {
+            supportFragmentManager.beginTransaction().apply {
                 replace(R.id.fragment_container, loginFragment())
                 commit()
             }
@@ -43,20 +41,15 @@ class LoginRegisterActivity : AppCompatActivity() {
         }
     }
 
-
     fun onNewMemberClicked(view: View) {
         Log.d("TAG", "This is a debug message")
-        // Replace the login fragment with the register fragment
-
-             supportFragmentManager.beginTransaction().apply {
-                 replace(R.id.fragment_container, RegisterFragment())
-                 commit()
-             }
-
-
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.fragment_container, RegisterFragment())
+            commit()
+        }
     }
+
     fun onBackButtonClicked(view: View) {
-        // Replace the register fragment with the login fragment
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.fragment_container, loginFragment())
             commit()
@@ -69,5 +62,4 @@ class LoginRegisterActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
-
 }

@@ -9,3 +9,10 @@ data class Schedule(
     val doctorId: String,
     val dayOfWeek: Int
 )
+
+// תגובה לזמינות פגישות לפי תאריך
+data class AvailableSlotsResponse(
+    val doctorId: String,
+    val date: String,
+    val slots: List<String>
+)

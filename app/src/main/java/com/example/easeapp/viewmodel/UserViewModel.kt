@@ -1,15 +1,15 @@
 package com.example.ease.viewmodel
 
-import android.graphics.Bitmap
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.ease.model.User
 import com.example.ease.model.UserRepository
 
-class UserViewModel : ViewModel() {
+class UserViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val userRepo = UserRepository()
+    private val userRepo = UserRepository.getInstance(application.applicationContext)
 
     private val _createUserResult = MutableLiveData<Result<Unit>>()
     val createUserResult: LiveData<Result<Unit>> = _createUserResult
@@ -22,12 +22,4 @@ class UserViewModel : ViewModel() {
             _allDoctors.postValue(users)
         }
     }
-
-
-
-
-    fun fetchUser() {
-
-    }
-
 }

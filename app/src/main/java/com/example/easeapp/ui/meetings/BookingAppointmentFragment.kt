@@ -1,6 +1,8 @@
 package com.example.easeapp.ui.meetings
 
+import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +12,17 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ease.R
+import com.example.easeapp.model.requests.AvailableSlotsResponse
+import com.example.easeapp.model.requests.RetrofitClientAppointments
+import com.example.easeapp.ui.adapters.DateAdapter
+import com.example.easeapp.ui.adapters.TimeAdapter
+import com.example.easeapp.model.AppointmentDate
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.time.LocalDate
 import java.time.format.TextStyle
-import java.util.Locale
+import java.util.*
 
 class BookingAppointmentFragment : Fragment() {
 
@@ -39,28 +49,55 @@ class BookingAppointmentFragment : Fragment() {
         timeRecyclerView = view.findViewById(R.id.timeRecyclerView)
         continueButton = view.findViewById(R.id.continueButton)
 
-        // Setup Date RecyclerView
+        // Setup RecyclerViews
         dateRecyclerView.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         dateRecyclerView.adapter = dateAdapter
 
-        // Setup Time RecyclerView
         timeRecyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
         timeRecyclerView.adapter = timeAdapter
 
         generateDateList()
-        generateTimeSlots()
+
+        dateAdapter.setOnDateSelectedListener { selectedDate ->
+            fetchAvailableTimeSlots(doctorId, selectedDate)
+        }
 
         continueButton.setOnClickListener {
             val selectedDate = dateAdapter.getSelectedDate()
             val selectedTime = timeAdapter.getSelectedTime()
             if (selectedDate != null && selectedTime != null) {
-                // TODO: Proceed with doctorId, selectedDate, and selectedTime
+                // TODO: שלח את הפגישה לשרת או עבור למסך אישור
             }
         }
 
         return view
     }
 
+    fun fetchAvailableTimeSlots(doctorId: String?, date: String) {
+        if (doctorId == null) return
+        var accessToken= getAccessToken(requireContext())
+        accessToken = accessToken?.replace("refreshToken=", "hello, ")
+        accessToken = accessToken?.replace(";", "")
+        val call = RetrofitClientAppointments.appointmentsApi.getAvailableSlots(accessToken!!,doctorId, date)
+        call.enqueue(object : Callback<AvailableSlotsResponse> {
+            override fun onResponse(call: Call<AvailableSlotsResponse>, response: Response<AvailableSlotsResponse>) {
+                if (response.isSuccessful) {
+                    val slots = response.body()?.slots ?: emptyList()
+                    timeAdapter.submitList(slots)
+                } else {
+                    Log.e("Booking", "Error fetching slots: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<AvailableSlotsResponse>, t: Throwable) {
+                Log.e("Booking", "Failure: ${t.message}")
+            }
+        })
+    }
+    fun getAccessToken(context: Context): String? {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("access_token_cookie", null)
+    }
     private fun generateDateList() {
         val today = LocalDate.now()
         val days = mutableListOf<AppointmentDate>()
@@ -72,14 +109,6 @@ class BookingAppointmentFragment : Fragment() {
         }
 
         dateAdapter.submitList(days)
-    }
-
-    private fun generateTimeSlots() {
-        val times = listOf(
-            "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM",
-            "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 AM"
-        )
-        timeAdapter.submitList(times)
     }
 
     companion object {

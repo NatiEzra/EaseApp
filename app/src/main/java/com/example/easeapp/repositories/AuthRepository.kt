@@ -3,10 +3,11 @@ package com.example.ease.repositories
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import com.example.ease.model.User
+import com.example.ease.model.local.UserEntity
+import com.example.ease.model.local.AppDatabase
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import com.example.ease.model.UserRepository
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.example.easeapp.model.requests.LoginRequest
 import com.example.easeapp.model.requests.LoginResponse
 import com.example.easeapp.model.requests.RegisterResponse
@@ -20,19 +21,29 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
+data class RefreshRequest(
+    val refreshToken: String
+)
+
+data class RefreshResponse(
+    val accessToken: String,
+    val refreshToken: String
+)
+
 class AuthRepository {
-    companion object{
+    companion object {
         val shared = AuthRepository()
     }
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-    private val userRepository= UserRepository.shared
 
-    val currentUser: FirebaseUser?
-        get() = auth.currentUser
-
-    fun registerUser(context: Context, username: String, email: String, password: String, bitmap: Bitmap?, onComplete: (Boolean, String?) -> Unit) {
+    fun registerUser(
+        context: Context,
+        username: String,
+        email: String,
+        password: String,
+        bitmap: Bitmap?,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
         val imageFile = bitmap?.let { bitmapToFile(it, context) }
-
         val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
         val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
         val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
@@ -40,13 +51,10 @@ class AuthRepository {
         val call = if (imageFile != null) {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val multipartBody = MultipartBody.Part.createFormData("profilePicture", imageFile.name, requestFile)
-
             RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, multipartBody)
         } else {
-            // Send an empty multipart form field with an empty filename and body
             val emptyRequestFile = "".toRequestBody("text/plain".toMediaTypeOrNull())
             val emptyPart = MultipartBody.Part.createFormData("profilePicture", "", emptyRequestFile)
-
             RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, emptyPart)
         }
 
@@ -58,12 +66,10 @@ class AuthRepository {
                     onComplete(false, response.errorBody()?.string() ?: "Unknown error")
                 }
             }
-
             override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
                 onComplete(false, t.message ?: "Network error")
             }
         })
-
     }
 
     fun bitmapToFile(bitmap: Bitmap, context: Context, fileName: String = "temp_image.jpg"): File {
@@ -74,82 +80,110 @@ class AuthRepository {
         return file
     }
 
-
-    fun authenticate(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    onComplete(true, null)
-                } else {
-                    onComplete(false, task.exception?.localizedMessage)
-                }
-            }
-    }
-    fun loginUser(email: String, password: String, onComplete: (Boolean, String?, Any?) -> Unit) {
+    fun loginUser(
+        context: Context,
+        email: String,
+        password: String,
+        onComplete: (Boolean, String?, Any?) -> Unit
+    ) {
         val request = LoginRequest(email, password)
+        RetrofitClient.authApi.login(request).enqueue(object : Callback<LoginResponse> {
+            var callbackCalled = false
 
-        RetrofitClient.authApi.login(request).enqueue(object : retrofit2.Callback<LoginResponse> {
-            override fun onResponse(call: retrofit2.Call<LoginResponse>, response: Response<LoginResponse>) {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful && response.body() != null) {
-                    val loginResponse = response.body() // this is a function call
-                    val accessToken = loginResponse?.accessToken
-                    val userId = loginResponse?._id
-                    if (accessToken != null && userId != null) {
-                        userRepository.getUser(
+                    val setCookieHeaders = response.headers()["Set-Cookie"]
+                    setCookieHeaders?.let {
+                        saveRefreshTokenLocally(context, it)
+                        saveAccessTokenLocally(context, it)
+                    }
+                    val loginResponse = response.body()!!
+                    val accessToken = loginResponse.accessToken
+                    if (accessToken.isNotEmpty()) {
+                        val userEntity = UserEntity(
+                            _id = loginResponse._id,
+                            email = loginResponse.email,
+                            name = loginResponse.username,
+                            profileImageUrl = loginResponse.profilePicture,
                             accessToken = accessToken,
-                            userId = userId,
-                            page = 1
-                        ) { success, user, error ->
-                            if (success && user != null) {
-                                onComplete(true, null, user)
-                                Log.d("USER", "Username: ${user.username}, Profile Pic: ${user.profilePicture}")
-                            } else {
-                                Log.e("ERROR", error ?: "Unknown error")
-                            }
+                            phoneNumber = loginResponse.phoneNumber,
+                            dateOfBirth = loginResponse.dateOfBirth,
+                            gender = loginResponse.gender
+                        )
+                        GlobalScope.launch {
+                            AppDatabase.getInstance(context).userDao().insert(userEntity)
+                        }
+                        if (!callbackCalled) {
+                            onComplete(true, null, loginResponse)
+                            callbackCalled = true
+                        }
+                        return
+                    } else {
+                        if (!callbackCalled) {
+                            onComplete(false, "Invalid login response", null)
+                            callbackCalled = true
                         }
                     }
-
-                    onComplete(true, null, null)
                 } else {
-                    onComplete(false, response.errorBody()?.string() ?: "Login failed", null)
+                    val errorBody = response.errorBody()?.string()
+                    if (!callbackCalled) {
+                        onComplete(false, errorBody ?: "Login failed", null)
+                        callbackCalled = true
+                    }
                 }
             }
 
-            override fun onFailure(call: retrofit2.Call<LoginResponse>, t: Throwable) {
-                onComplete(false, t.message ?: "Network error", null)
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                if (!callbackCalled) {
+                    onComplete(false, t.message ?: "Network error", null)
+                    callbackCalled = true
+                }
             }
         })
     }
 
-
-    fun signOut() {
-        auth.signOut()
-    }
-    fun changePassword(newPassword: String ,onComplete: (Boolean, String?) -> Unit){
-        val user = auth.currentUser
-        user?.let {
-            user.updatePassword(newPassword)
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        onComplete(true, null)
-                    } else {
-                        onComplete(false, task.exception?.localizedMessage)
-                    }
-                }
-        }
+    fun saveRefreshTokenLocally(context: Context, cookie: String) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("refresh_token_cookie", cookie).apply()
     }
 
+    fun saveAccessTokenLocally(context: Context, cookie: String) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putString("access_token_cookie", cookie).apply()
+    }
 
-    fun isUserLoggedIn(): Boolean = currentUser != null
-    fun getCurrentUserEmail(): String {
-        val email: String
-        if(currentUser!=null){
-            email= currentUser!!.email.toString()
+    fun getRefreshToken(context: Context): String? {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("refresh_token_cookie", null)
+    }
+
+    fun getAccessToken(context: Context): String? {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("access_token_cookie", null)
+    }
+
+    fun signOut(context: Context, onComplete: (Boolean, String?) -> Unit) {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        prefs.edit().remove("access_token_cookie").remove("refresh_token_cookie").apply()
+        onComplete(true, null)
+    }
+
+    fun isUserLoggedIn(context: Context): Boolean = getAccessToken(context) != null
+
+    suspend fun refreshAccessToken(context: Context): String {
+        val refreshToken = getRefreshToken(context) ?: return ""
+        return try {
+            val call = RetrofitClient.authApi.refreshToken(RefreshRequest(refreshToken))
+            val response = call.execute()
+            if (response.isSuccessful && response.body() != null) {
+                val newAccessToken = response.body()!!.accessToken
+                saveAccessTokenLocally(context, newAccessToken)
+                newAccessToken
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            ""
         }
-        else{
-            email=""
-        }
-        return email
     }
 }
-
