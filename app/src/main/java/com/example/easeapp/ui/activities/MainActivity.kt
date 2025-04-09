@@ -106,6 +106,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navController.navigate(R.id.myProfileFragment)
     }
 
+    fun diaryButtonClicked() {
+        navController.navigate(R.id.diaryFragment)
+    }
+
     fun navigateToLogin() {
         val intent = Intent(this, LoginRegisterActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
