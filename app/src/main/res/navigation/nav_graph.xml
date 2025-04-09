@@ -103,7 +103,11 @@
         android:id="@+id/myMeetingFragment"
         android:name="com.example.easeapp.ui.meetings.MyMeetingFragment"
         android:label="My Meeting" >
+        <action
+            android:id="@+id/action_myMeetingFragment_to_scheduleRoutineMeeting"
+            app:destination="@id/scheduleRoutineMeeting"/>
     </fragment>
+
 
 
 

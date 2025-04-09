@@ -1,5 +1,6 @@
 package com.example.easeapp.ui.meetings
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
 import java.time.Instant
@@ -43,14 +43,25 @@ class AppointmentConfirmationFragment : Fragment() {
             time ?: "Unknown Time"
         }
 
+        // ✅ שמירת נתוני הפגישה ל-SharedPreferences
+        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString("doctorName", doctorName)
+            .putString("date", date)
+            .putString("time", formattedTime)
+            .apply()
+
+        // טקסט התצוגה
         view.findViewById<TextView>(R.id.doctorText).text =
             "You booked an appointment with Dr. $doctorName on $date at $formattedTime"
 
+        // כפתור Done
         view.findViewById<Button>(R.id.doneButton).setOnClickListener {
             val action = AppointmentConfirmationFragmentDirections
                 .actionAppointmentConfirmationFragmentToHomePageFragment()
             findNavController().navigate(action)
         }
+
         return view
     }
 

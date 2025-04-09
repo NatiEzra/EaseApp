@@ -71,4 +71,34 @@ class AppointmentRepository {
             })
     }
 
+    fun cancelAppointment(
+        context: Context,
+        appointmentId: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        var token = AuthRepository.shared.getAccessToken(context) ?: return onComplete(false, "No token found")
+
+        token = token.replace("refreshToken=", "")
+        token = token.replace(";", "")
+
+        RetrofitClientAppointments.appointmentsApi
+            .cancelAppointment("Bearer $token", appointmentId)
+            .enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (response.isSuccessful) {
+                        onComplete(true, null)
+                    } else {
+                        val error = response.errorBody()?.string() ?: "Unknown error"
+                        onComplete(false, error)
+                    }
+                }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    onComplete(false, t.message ?: "Network failure")
+                }
+            })
+    }
+
+
+
 }

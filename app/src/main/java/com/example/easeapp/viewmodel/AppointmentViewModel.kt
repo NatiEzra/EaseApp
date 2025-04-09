@@ -15,6 +15,8 @@ class AppointmentViewModel(
     val createAppointmentStatus: LiveData<Result<Boolean>> get() = _createAppointmentStatus
     private val _appointmentDate = MutableLiveData<String?>()
     val appointmentDate: MutableLiveData<String?> get() = _appointmentDate
+    private val _cancelAppointmentStatus = MutableLiveData<Result<Boolean>>()
+    val cancelAppointmentStatus: LiveData<Result<Boolean>> get() = _cancelAppointmentStatus
 
     fun createAppointment(
         context: Context,
@@ -50,5 +52,17 @@ class AppointmentViewModel(
             }
         }
     }
+
+
+    fun cancelAppointment(context: Context, appointmentId: String) {
+        appointRepo.cancelAppointment(context, appointmentId) { success, error ->
+            if (success) {
+                _cancelAppointmentStatus.postValue(Result.success(true))
+            } else {
+                _cancelAppointmentStatus.postValue(Result.failure(Throwable(error)))
+            }
+        }
+    }
+
 
 }

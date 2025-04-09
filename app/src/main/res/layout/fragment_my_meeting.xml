@@ -24,8 +24,10 @@
             android:textStyle="bold" />
     </LinearLayout>
 
-    <!-- Card -->
+    <!-- Card Layout for Existing Meeting -->
     <LinearLayout
+        android:id="@+id/meetingCardLayout"
+        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -74,7 +76,7 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- Buttons -->
+    <!-- Buttons for existing meeting -->
     <Button
         android:id="@+id/changeTimeButton"
         android:layout_width="match_parent"
@@ -82,7 +84,8 @@
         android:text="Change Time"
         android:textColor="@android:color/white"
         android:backgroundTint="#2A63E8"
-        android:layout_marginBottom="12dp"/>
+        android:layout_marginBottom="12dp"
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/cancelMeetingButton"
@@ -90,5 +93,34 @@
         android:layout_height="wrap_content"
         android:text="Cancel My Meeting"
         android:textColor="@android:color/white"
-        android:backgroundTint="#E53935"/>
+        android:backgroundTint="#E53935"
+        android:visibility="gone" />
+
+    <!-- Empty layout (no meeting yet) -->
+    <LinearLayout
+        android:id="@+id/emptyLayout"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No meeting scheduled yet"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/scheduleNewMeetingButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Schedule a Meeting"
+            android:backgroundTint="#2A63E8"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
 </LinearLayout>
