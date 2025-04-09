@@ -30,14 +30,14 @@ class DiaryRepo(private val context: Context) {
 
     private val diaryList: MutableList<DiaryModel> = mutableListOf()
 
-    fun addDiary(diaryModel: DiaryModel) {
+    fun addDiary(diaryText: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val currentUser = AppDatabase.getInstance(context).userDao().getCurrentUser()
                 val token = "Bearer " + (currentUser?.accessToken?.trim() ?: "")
 
                 val request = DiaryModel(
-                    context = diaryModel.context,
+                    context = diaryText,
                     date = Date(),
                     authorId = currentUser?._id  ?: ""
                 )

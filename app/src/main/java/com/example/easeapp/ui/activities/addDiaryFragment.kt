@@ -10,6 +10,7 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import com.example.ease.R
+import com.example.easeapp.model.DiaryRepo
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -50,8 +51,7 @@ class addDiaryFragment : Fragment() {
             progressBar.visibility=View.VISIBLE
             var diaryTextString=diaryEditText.text.toString()
             if(diaryTextString.isNotEmpty()){
-                // Call the function to add the diary entry
-                // addDiaryEntry(diaryTextString)
+                context?.let { it1 -> DiaryRepo(it1).addDiary(diaryTextString) }
                 progressBar.visibility=View.GONE
         }
             else{
