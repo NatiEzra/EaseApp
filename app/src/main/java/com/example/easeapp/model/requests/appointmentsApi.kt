@@ -4,6 +4,7 @@ import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -31,6 +32,13 @@ interface AppointmentsApi {
         @Header("Authorization") token: String,
         @Path("doctorId") doctorId: String
     ): Call<ClosestAppointmentResponse>
+
+    @DELETE("/api/appointments/{appointmentId}")
+    fun cancelAppointment(
+        @Header("Authorization") token: String,
+        @Path("appointmentId") appointmentId: String
+    ): Call<Void>
+
 }
 
 // אובייקט Retrofit
