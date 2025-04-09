@@ -21,26 +21,18 @@ class ChatRoutineFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val backIcon = view.findViewById<ImageView>(R.id.backIcon)
-        val menuIcon = view.findViewById<ImageView>(R.id.menuIcon)
+
         val btnSchedule = view.findViewById<Button>(R.id.btnSchedule)
         val btnMyMeeting = view.findViewById<Button>(R.id.btnMyMeeting)
         val btnJoinMeeting = view.findViewById<Button>(R.id.btnJoinMeeting)
-
-        backIcon.setOnClickListener {
-            findNavController().navigate(R.id.chatSelectorFragment)
-        }
-
-        menuIcon.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu clicked (future feature)", Toast.LENGTH_SHORT).show()
-        }
 
         btnSchedule.setOnClickListener {
             findNavController().navigate(R.id.scheduleRoutineMeeting)
         }
 
         btnMyMeeting.setOnClickListener {
-            Toast.makeText(requireContext(), "My Meeting clicked", Toast.LENGTH_SHORT).show()
+            val action = ChatRoutineFragmentDirections.actionRoutineFragmentToMyMeetingFragment()
+            findNavController().navigate(action)
         }
 
         btnJoinMeeting.setOnClickListener {

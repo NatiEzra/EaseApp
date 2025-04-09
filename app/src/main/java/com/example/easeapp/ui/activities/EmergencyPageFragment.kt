@@ -72,11 +72,6 @@ class EmergencyPageFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val backButton = view.findViewById<ImageView>(R.id.backIcon)
-        backButton.setOnClickListener {
-            findNavController().navigate(R.id.homePageFragment)
-        }
     }
 
 }

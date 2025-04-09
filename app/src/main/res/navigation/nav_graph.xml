@@ -44,6 +44,10 @@
         <action
             android:id="@+id/action_chatRoutineFragment_to_scheduleRoutineMeeting"
             app:destination="@id/scheduleRoutineMeeting" />
+        <action
+            android:id="@+id/action_routineFragment_to_myMeetingFragment"
+            app:destination="@id/myMeetingFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/emergencyChatFragment"
@@ -74,7 +78,33 @@
         <argument
             android:name="doctorId"
             app:argType="string" />
+        <argument
+            android:name="doctorName"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_bookingAppointmentFragment_to_appointmentConfirmationFragment"
+            app:destination="@id/appointmentConfirmationFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/appointmentConfirmationFragment"
+        android:name="com.example.easeapp.ui.meetings.AppointmentConfirmationFragment"
+        android:label="Confirmation">
+        <argument android:name="doctorName" app:argType="string" />
+        <argument android:name="date" app:argType="string" />
+        <argument android:name="time" app:argType="string" />
+        <action
+            android:id="@+id/action_appointmentConfirmationFragment_to_homePageFragment"
+            app:destination="@id/homePageFragment"
+            app:popUpTo="@id/appointmentConfirmationFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/myMeetingFragment"
+        android:name="com.example.easeapp.ui.meetings.MyMeetingFragment"
+        android:label="My Meeting" >
+    </fragment>
+
 
 
 

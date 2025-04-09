@@ -146,8 +146,12 @@ class ScheduleRoutineMeeting : Fragment() {
             doctors,
             onBookClick = { selectedDoctor ->
                 val action = ScheduleRoutineMeetingDirections
-                    .actionScheduleRoutineMeetingToBookingAppointmentFragment(selectedDoctor._id)
+                    .actionScheduleRoutineMeetingToBookingAppointmentFragment(
+                        doctorId = selectedDoctor._id,
+                        doctorName = selectedDoctor.username
+                    )
                 findNavController().navigate(action)
+
             },
             getClosestAppointment = { context, doctorId ->
                 appointmentViewModel.getClosestAppointment(context, doctorId)

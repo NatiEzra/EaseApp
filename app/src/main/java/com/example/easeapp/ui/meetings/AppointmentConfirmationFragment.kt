@@ -1,0 +1,67 @@
+package com.example.easeapp.ui.meetings
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.navigation.NavOptions
+import androidx.navigation.fragment.findNavController
+import com.example.ease.R
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+class AppointmentConfirmationFragment : Fragment() {
+
+    private var doctorName: String? = null
+    private var date: String? = null
+    private var time: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            doctorName = it.getString("doctorName")
+            date = it.getString("date")
+            time = it.getString("time")
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        val view = inflater.inflate(R.layout.fragment_appointment_confirmation, container, false)
+
+        val formattedTime = try {
+            val instant = Instant.parse(time)
+            val localTime = instant.atZone(ZoneId.systemDefault()).toLocalTime()
+            localTime.format(DateTimeFormatter.ofPattern("HH:mm"))
+        } catch (e: Exception) {
+            time ?: "Unknown Time"
+        }
+
+        view.findViewById<TextView>(R.id.doctorText).text =
+            "You booked an appointment with Dr. $doctorName on $date at $formattedTime"
+
+        view.findViewById<Button>(R.id.doneButton).setOnClickListener {
+            val action = AppointmentConfirmationFragmentDirections
+                .actionAppointmentConfirmationFragmentToHomePageFragment()
+            findNavController().navigate(action)
+        }
+        return view
+    }
+
+    companion object {
+        fun newInstance(doctorName: String, date: String, time: String) =
+            AppointmentConfirmationFragment().apply {
+                arguments = Bundle().apply {
+                    putString("doctorName", doctorName)
+                    putString("date", date)
+                    putString("time", time)
+                }
+            }
+    }
+}
