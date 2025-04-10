@@ -1,4 +1,4 @@
-package com.example.easeapp.ui.meetings
+package com.example.easeapp.ui.meeting
 
 import android.content.Context
 import android.os.Bundle

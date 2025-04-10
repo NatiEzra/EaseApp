@@ -1,5 +1,5 @@
 
-package com.example.easeapp.ui.meetings
+package com.example.easeapp.ui.meeting
 
 import android.content.Context
 import android.os.Bundle
@@ -33,7 +33,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 import java.util.*
 
 class BookingAppointmentFragment : Fragment() {
@@ -42,6 +41,8 @@ class BookingAppointmentFragment : Fragment() {
     private var doctorName: String? = null
     private var selectedDate: String? = null
     private var selectedSlot: DisplayableSlot? = null
+    private var appointmentId: String? = null
+
 
 
     private lateinit var dateRecyclerView: RecyclerView
@@ -91,18 +92,19 @@ class BookingAppointmentFragment : Fragment() {
         }
 
         appointmentViewModel.createAppointmentStatus.observe(viewLifecycleOwner) { result ->
-            result.onSuccess {
+            result.onSuccess { appointmentId ->
                 if (selectedDate != null && selectedSlot != null && doctorName != null) {
                     val action = BookingAppointmentFragmentDirections
                         .actionBookingAppointmentFragmentToAppointmentConfirmationFragment(
+                            appointmentId = appointmentId.toString(),
                             doctorName = doctorName!!,
                             date = selectedDate!!,
                             time = selectedSlot!!.original
-
                         )
                     findNavController().navigate(action)
                 }
             }
+
             result.onFailure {
                 Toast.makeText(context, it.message ?: "Appointment not set :(", Toast.LENGTH_SHORT).show()
             }

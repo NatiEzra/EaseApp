@@ -11,8 +11,8 @@ import com.example.easeapp.repositories.AppointmentRepository
 class AppointmentViewModel(
     private val appointRepo: AppointmentRepository = AppointmentRepository.shared
 ) : ViewModel() {
-    private val _createAppointmentStatus = MutableLiveData<Result<Boolean>>()
-    val createAppointmentStatus: LiveData<Result<Boolean>> get() = _createAppointmentStatus
+    private val _createAppointmentStatus = MutableLiveData<Result<String>>()
+    val createAppointmentStatus: LiveData<Result<String>> get() = _createAppointmentStatus
     private val _appointmentDate = MutableLiveData<String?>()
     val appointmentDate: MutableLiveData<String?> get() = _appointmentDate
     private val _cancelAppointmentStatus = MutableLiveData<Result<Boolean>>()
@@ -34,13 +34,14 @@ class AppointmentViewModel(
             isEmergency = isEmergency,
             initiator = "patient"
         )
-        appointRepo.createAppointment(context, request) { success, _, error ->
-            if (success) {
-                _createAppointmentStatus.postValue(Result.success(true))
+        appointRepo.createAppointment(context, request) { success, appointment, error ->
+            if (success && appointment != null) {
+                _createAppointmentStatus.postValue(Result.success(appointment._id))
             } else {
                 _createAppointmentStatus.postValue(Result.failure(Throwable(error)))
             }
         }
+
     }
 
     fun getClosestAppointment(context: Context, doctorId: String) {

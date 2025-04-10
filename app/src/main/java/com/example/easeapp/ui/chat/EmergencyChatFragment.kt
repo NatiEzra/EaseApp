@@ -1,4 +1,4 @@
-package com.example.ease.ui.chat
+package com.example.easeapp.ui.chat
 
 import android.os.Bundle
 import android.view.Gravity
@@ -10,7 +10,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import com.example.ease.R
 
 class EmergencyChatFragment : Fragment() {

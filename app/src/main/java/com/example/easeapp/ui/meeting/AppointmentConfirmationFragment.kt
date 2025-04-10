@@ -1,4 +1,4 @@
-package com.example.easeapp.ui.meetings
+package com.example.easeapp.ui.meeting
 
 import android.content.Context
 import android.os.Bundle
@@ -19,10 +19,12 @@ class AppointmentConfirmationFragment : Fragment() {
     private var doctorName: String? = null
     private var date: String? = null
     private var time: String? = null
+    private var appointmentId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
+            appointmentId = it.getString("appointmentId")
             doctorName = it.getString("doctorName")
             date = it.getString("date")
             time = it.getString("time")
@@ -43,9 +45,10 @@ class AppointmentConfirmationFragment : Fragment() {
             time ?: "Unknown Time"
         }
 
-        // ✅ שמירת נתוני הפגישה ל-SharedPreferences
+
         val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
         prefs.edit()
+            .putString("appointmentId", appointmentId)
             .putString("doctorName", doctorName)
             .putString("date", date)
             .putString("time", formattedTime)
@@ -66,9 +69,10 @@ class AppointmentConfirmationFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(doctorName: String, date: String, time: String) =
+        fun newInstance(doctorName: String, date: String, time: String,appointmentId:String) =
             AppointmentConfirmationFragment().apply {
                 arguments = Bundle().apply {
+                    putString("appointmentId", appointmentId)
                     putString("doctorName", doctorName)
                     putString("date", date)
                     putString("time", time)

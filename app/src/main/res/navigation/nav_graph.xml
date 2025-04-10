@@ -51,21 +51,21 @@
     </fragment>
     <fragment
         android:id="@+id/emergencyChatFragment"
-        android:name="com.example.ease.ui.chat.EmergencyChatFragment"
+        android:name="com.example.easeapp.ui.chat.EmergencyChatFragment"
         android:label="Emergency Chat" />
     <action
         android:id="@+id/action_emergencyChatFragment_to_chatSelectorFragment"
         app:destination="@id/chatSelectorFragment" />
     <fragment
         android:id="@+id/emergencyPageFragment"
-        android:name="com.example.ease.ui.emergency.EmergencyPageFragment"
+        android:name="com.example.easeapp.ui.emergency.EmergencyPageFragment"
         android:label="Emergency Page" />
     <action
         android:id="@+id/action_homePageFragment_to_emergencyPageFragment"
         app:destination="@id/emergencyPageFragment" />
     <fragment
         android:id="@+id/scheduleRoutineMeeting"
-        android:name="com.example.easeapp.ui.meetings.ScheduleRoutineMeeting"
+        android:name="com.example.easeapp.ui.meeting.ScheduleRoutineMeeting"
         android:label="ScheduleRoutineMeeting" >
         <action
             android:id="@+id/action_scheduleRoutineMeeting_to_bookingAppointmentFragment"
@@ -73,7 +73,7 @@
     </fragment>
     <fragment
         android:id="@+id/bookingAppointmentFragment"
-        android:name="com.example.easeapp.ui.meetings.BookingAppointmentFragment"
+        android:name="com.example.easeapp.ui.meeting.BookingAppointmentFragment"
         android:label="BookingAppointmentFragment" >
         <argument
             android:name="doctorId"
@@ -81,14 +81,18 @@
         <argument
             android:name="doctorName"
             app:argType="string" />
+
         <action
             android:id="@+id/action_bookingAppointmentFragment_to_appointmentConfirmationFragment"
             app:destination="@id/appointmentConfirmationFragment" />
     </fragment>
     <fragment
         android:id="@+id/appointmentConfirmationFragment"
-        android:name="com.example.easeapp.ui.meetings.AppointmentConfirmationFragment"
+        android:name="com.example.easeapp.ui.meeting.AppointmentConfirmationFragment"
         android:label="Confirmation">
+        <argument
+            android:name="appointmentId"
+            app:argType="string" />
         <argument android:name="doctorName" app:argType="string" />
         <argument android:name="date" app:argType="string" />
         <argument android:name="time" app:argType="string" />
@@ -101,12 +105,26 @@
 
     <fragment
         android:id="@+id/myMeetingFragment"
-        android:name="com.example.easeapp.ui.meetings.MyMeetingFragment"
+        android:name="com.example.easeapp.ui.meeting.MyMeetingFragment"
         android:label="My Meeting" >
         <action
             android:id="@+id/action_myMeetingFragment_to_scheduleRoutineMeeting"
             app:destination="@id/scheduleRoutineMeeting"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/meetingChatFragment"
+        android:name="com.example.easeapp.ui.chat.MeetingChatFragment"
+        android:label="Meeting Chat">
+        <argument
+            android:name="appointmentId"
+            app:argType="string" />
+    </fragment>
+    <action
+        android:id="@+id/action_routineFragment_to_meetingChatFragment"
+        app:destination="@id/meetingChatFragment" />
+
+
 
 
 

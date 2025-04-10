@@ -1,4 +1,4 @@
-package com.example.easeapp.ui.meetings
+package com.example.easeapp.ui.meeting
 
 import android.content.Context
 import android.os.Bundle
@@ -12,7 +12,6 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController

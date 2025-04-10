@@ -2,6 +2,7 @@ package com.example.ease.ui.chat
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,6 +11,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
+import com.example.easeapp.ui.chat.MeetingChatFragmentDirections.Companion.actionRoutineFragmentToMeetingChatFragment
 
 class ChatRoutineFragment : Fragment() {
 
@@ -42,7 +44,17 @@ class ChatRoutineFragment : Fragment() {
         }
 
         btnJoinMeeting.setOnClickListener {
-            Toast.makeText(requireContext(), "Join Meeting clicked", Toast.LENGTH_SHORT).show()
+            val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+            val appointmentId = prefs.getString("appointmentId", null)
+            Log.d("JOIN_MEETING", "appointmentId from prefs: $appointmentId")
+
+            if (appointmentId != null) {
+                val action = ChatRoutineFragmentDirections.actionRoutineFragmentToMeetingChatFragment(appointmentId)
+                findNavController().navigate(action)
+            } else {
+                Toast.makeText(requireContext(), "No meeting found", Toast.LENGTH_SHORT).show()
+            }
         }
+
     }
 }
