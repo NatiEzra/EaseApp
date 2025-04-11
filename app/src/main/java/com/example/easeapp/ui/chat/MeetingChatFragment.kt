@@ -3,13 +3,14 @@ package com.example.easeapp.ui.chat
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import com.example.ease.R
-import okhttp3.*
-import okio.ByteString
+import io.socket.client.IO
+import io.socket.client.Socket
 import org.json.JSONObject
 
 class MeetingChatFragment : Fragment() {
@@ -17,7 +18,7 @@ class MeetingChatFragment : Fragment() {
     private lateinit var messageInput: EditText
     private lateinit var sendIcon: ImageView
     private lateinit var messageContainer: LinearLayout
-    private lateinit var webSocket: WebSocket
+    private lateinit var socket: Socket
 
     private val args: MeetingChatFragmentArgs by navArgs()
 
@@ -30,49 +31,65 @@ class MeetingChatFragment : Fragment() {
         sendIcon = view.findViewById(R.id.sendIcon)
         messageContainer = view.findViewById(R.id.messageContainer)
 
-        startWebSocket(args.appointmentId)
+        connectSocket()
 
         sendIcon.setOnClickListener {
             val messageText = messageInput.text.toString().trim()
             if (messageText.isNotEmpty()) {
-                val userId = getUserIdFromPrefs()
-                val doctorId = getDoctorIdFromPrefs()
-
-                val json = JSONObject().apply {
-                    put("meetingId", args.appointmentId)
-                    put("from", userId)
-                    put("to", doctorId)
-                    put("message", messageText)
-                    put("timestamp", System.currentTimeMillis())
-                }
-
-                webSocket.send(json.toString())
-                addMessageToUI(messageText, fromMe = true)
+                sendMessage(messageText)
                 messageInput.text.clear()
             }
         }
+        val doctorId = getDoctorIdFromPrefs()
+        Log.d("SOCKET", "📤 Sending message to doctorId: $doctorId")
 
     }
 
-    private fun startWebSocket(appointmentId: String) {
-        val client = OkHttpClient()
-        val request = Request.Builder()
-            .url("ws://192.168.1.105:3000/ws/$appointmentId")
-            .build()
+    private fun connectSocket() {
+        val opts = IO.Options().apply {
+            forceNew = true
+            reconnection = true
+        }
 
-        webSocket = client.newWebSocket(request, object : WebSocketListener() {
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                activity?.runOnUiThread {
-                    addMessageToUI(text, fromMe = false)
-                }
-            }
+        socket = IO.socket("http://192.168.1.105:3000", opts)
 
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                activity?.runOnUiThread {
-                    Toast.makeText(requireContext(), "Connection error: ${t.message}", Toast.LENGTH_SHORT).show()
-                }
+        socket.on(Socket.EVENT_CONNECT) {
+            Log.d("SOCKET", "Connected ✅")
+
+            val joinData = JSONObject().apply {
+                put("meetingId", args.appointmentId)
+                put("userId", getUserIdFromPrefs())
+                put("role", "patient")
             }
-        })
+            socket.emit("joinRoom", joinData)
+        }
+
+        socket.on("newMessage") { args ->
+            val data = args[0] as JSONObject
+            val msg = data.getString("message")
+            activity?.runOnUiThread {
+                addMessageToUI(msg, fromMe = false)
+            }
+        }
+
+        socket.on(Socket.EVENT_DISCONNECT) {
+            Log.d("SOCKET", "Disconnected ❌")
+        }
+
+        socket.connect()
+    }
+
+    private fun sendMessage(messageText: String) {
+        val msgData = JSONObject().apply {
+            put("meetingId", args.appointmentId)
+            put("from", getUserIdFromPrefs())
+            put("to", getDoctorIdFromPrefs())
+            put("message", messageText)
+            put("timestamp", System.currentTimeMillis())
+        }
+
+        socket.emit("sendMessage", msgData)
+        addMessageToUI(messageText, fromMe = true)
     }
 
     private fun addMessageToUI(text: String, fromMe: Boolean) {
@@ -106,12 +123,12 @@ class MeetingChatFragment : Fragment() {
     }
 
     private fun getDoctorIdFromPrefs(): String {
-      val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-      return prefs.getString("doctorId", "") ?: ""
+        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("doctorId", "") ?: ""
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        webSocket.close(1000, null)
+        socket.disconnect()
     }
 }

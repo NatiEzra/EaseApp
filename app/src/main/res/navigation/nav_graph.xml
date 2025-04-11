@@ -96,6 +96,8 @@
         <argument android:name="doctorName" app:argType="string" />
         <argument android:name="date" app:argType="string" />
         <argument android:name="time" app:argType="string" />
+        <argument android:name="doctorId" app:argType="string" />
+
         <action
             android:id="@+id/action_appointmentConfirmationFragment_to_homePageFragment"
             app:destination="@id/homePageFragment"

@@ -2,6 +2,7 @@ package com.example.easeapp.ui.meeting
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ class AppointmentConfirmationFragment : Fragment() {
     private var date: String? = null
     private var time: String? = null
     private var appointmentId: String? = null
+    private var doctorId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +30,7 @@ class AppointmentConfirmationFragment : Fragment() {
             doctorName = it.getString("doctorName")
             date = it.getString("date")
             time = it.getString("time")
+            doctorId = it.getString("doctorId")
         }
     }
 
@@ -49,10 +52,13 @@ class AppointmentConfirmationFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
         prefs.edit()
             .putString("appointmentId", appointmentId)
+            .putString("doctorId", doctorId)
             .putString("doctorName", doctorName)
             .putString("date", date)
             .putString("time", formattedTime)
             .apply()
+
+        Log.d("CONFIRM", "✅ Saved doctorId to prefs: $doctorId")
 
         // טקסט התצוגה
         view.findViewById<TextView>(R.id.doctorText).text =

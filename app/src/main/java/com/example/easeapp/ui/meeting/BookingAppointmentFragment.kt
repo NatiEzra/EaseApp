@@ -97,6 +97,7 @@ class BookingAppointmentFragment : Fragment() {
                     val action = BookingAppointmentFragmentDirections
                         .actionBookingAppointmentFragmentToAppointmentConfirmationFragment(
                             appointmentId = appointmentId.toString(),
+                            doctorId = doctorId!!,
                             doctorName = doctorName!!,
                             date = selectedDate!!,
                             time = selectedSlot!!.original
