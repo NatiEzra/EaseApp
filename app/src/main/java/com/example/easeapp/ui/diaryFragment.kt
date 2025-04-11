@@ -1,10 +1,12 @@
 package com.example.easeapp.ui
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -36,6 +38,32 @@ class DiaryFragment : Fragment() {
         val addDiaryButton = view.findViewById<ImageButton>(R.id.addDiary)
         addDiaryButton.setOnClickListener {
             findNavController().navigate(R.id.addDiaryFragment)
+        }
+
+        val deleteButton = view.findViewById<ImageView>(R.id.deleteDiaryIcon)
+
+        deleteButton?.setOnClickListener {
+
+            AlertDialog.Builder(view.context)
+                .setTitle("Delete Post")
+                .setMessage("Are you sure you want to delete this post?")
+                .setPositiveButton("Yes") { dialog, _ ->
+                    //onDeleteClick(item.)
+                    viewModel.diaryDeleted.observe(viewLifecycleOwner) { result ->
+                        result
+                            .onSuccess {
+                                viewModel.loadUserDiaries(requireContext())
+                            }
+                            .onFailure {
+                                // Handle error
+                            }
+                    }
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.fragment_feed_recycler_view)

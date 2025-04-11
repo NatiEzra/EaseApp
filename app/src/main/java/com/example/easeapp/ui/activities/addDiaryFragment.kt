@@ -31,13 +31,15 @@ class AddDiaryFragment : Fragment() {
         val diaryEditText = view.findViewById<EditText>(R.id.diaryEditText)
         val postButton = view.findViewById<Button>(R.id.postButtonDiary)
         val progressBar = view.findViewById<ProgressBar>(R.id.addDiaryProgressBar)
-
+        val cancelButton= view.findViewById<Button>(R.id.cancelButton)
         postButton.setOnClickListener {
             val text = diaryEditText.text.toString()
             progressBar.visibility = View.VISIBLE
             viewModel.addDiaryEntry(requireContext(), text)
         }
-
+        cancelButton.setOnClickListener {
+            findNavController().navigate(R.id.diaryFragment)
+        }
         viewModel.diarySaved.observe(viewLifecycleOwner) { result ->
             progressBar.visibility = View.GONE
             result

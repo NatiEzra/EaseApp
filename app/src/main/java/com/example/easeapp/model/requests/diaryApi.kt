@@ -2,6 +2,7 @@ package com.example.easeapp.model.requests
 
 import TokenAuthenticator
 import android.content.Context
+import retrofit2.http.DELETE
 import com.example.ease.model.User
 import com.example.ease.repositories.AuthRepository
 import com.example.easeapp.model.DiaryModel
@@ -20,6 +21,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface DiaryApi {
@@ -34,6 +36,12 @@ interface DiaryApi {
         @Header("Authorization") token: String,
         @Query("patientId") userId: String
     ): Response<List<DiaryModel>>
+
+    @DELETE("/api/deleteDiary/{id}")
+    suspend fun deleteDiary(
+        @Header("Authorization") token: String,
+        @Path("id") id: String
+    ): Response<DiaryResponse>
 }
 object RetrofitClientDiary  {
     private const val BASE_URL = "http://10.0.2.2:3000"

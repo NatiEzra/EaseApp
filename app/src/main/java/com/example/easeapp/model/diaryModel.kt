@@ -87,6 +87,19 @@ private val context: Context
         }
     }
 
+   suspend fun deleteDiary(diaryId: String): String = withContext(Dispatchers.IO){
+       val currentUser = db.userDao().getCurrentUser()
+         if (currentUser == null) return@withContext "User not found"
+        val token = "Bearer ${currentUser.accessToken?.trim()}"
+        val response = api.deleteDiary(token,diaryId)
+        if (response.isSuccessful) {
+            return@withContext response.body()?.message ?: "Success"
+        } else {
+            val error = response.errorBody()?.string()
+            return@withContext "Error: ${error ?: "Unknown error"}"
+        }
+   }
+
 }
 
 
