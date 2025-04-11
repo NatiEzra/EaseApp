@@ -1,0 +1,277 @@
+Index: app/src/main/java/com/example/easeapp/repositories/AuthRepository.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.ease.repositories\r\n\r\nimport android.content.Context\r\nimport android.graphics.Bitmap\r\nimport android.util.Log\r\nimport com.example.ease.model.User\r\nimport com.google.firebase.auth.FirebaseAuth\r\nimport com.google.firebase.auth.FirebaseUser\r\nimport com.example.easeapp.model.requests.LoginRequest\r\nimport com.example.easeapp.model.requests.LoginResponse\r\nimport com.example.easeapp.model.requests.RegisterResponse\r\nimport com.example.easeapp.model.requests.RetrofitClient\r\nimport retrofit2.Call\r\nimport retrofit2.Callback\r\nimport retrofit2.Response\r\nimport okhttp3.MediaType.Companion.toMediaTypeOrNull\r\nimport okhttp3.MultipartBody\r\nimport okhttp3.RequestBody.Companion.asRequestBody\r\nimport okhttp3.RequestBody.Companion.toRequestBody\r\nimport java.io.File\r\n\r\nclass AuthRepository {\r\n    companion object{\r\n        val shared = AuthRepository()\r\n    }\r\n    private val auth: FirebaseAuth = FirebaseAuth.getInstance()\r\n    private val userRepository= User.shared\r\n\r\n    val currentUser: FirebaseUser?\r\n        get() = auth.currentUser\r\n\r\n    fun registerUser(context: Context, username: String, email: String, password: String, bitmap: Bitmap?, onComplete: (Boolean, String?) -> Unit) {\r\n        val imageFile = bitmap?.let { bitmapToFile(it, context) }\r\n\r\n        val usernamePart = username.toRequestBody(\"text/plain\".toMediaTypeOrNull())\r\n        val emailPart = email.toRequestBody(\"text/plain\".toMediaTypeOrNull())\r\n        val passwordPart = password.toRequestBody(\"text/plain\".toMediaTypeOrNull())\r\n\r\n        val call = if (imageFile != null) {\r\n            val requestFile = imageFile.asRequestBody(\"image/*\".toMediaTypeOrNull())\r\n            val multipartBody = MultipartBody.Part.createFormData(\"profilePicture\", imageFile.name, requestFile)\r\n\r\n            RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, multipartBody)\r\n        } else {\r\n            // Send an empty multipart form field with an empty filename and body\r\n            val emptyRequestFile = \"\".toRequestBody(\"text/plain\".toMediaTypeOrNull())\r\n            val emptyPart = MultipartBody.Part.createFormData(\"profilePicture\", \"\", emptyRequestFile)\r\n\r\n            RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, emptyPart)\r\n        }\r\n\r\n        call.enqueue(object : Callback<RegisterResponse> {\r\n            override fun onResponse(call: Call<RegisterResponse>, response: Response<RegisterResponse>) {\r\n                if (response.isSuccessful) {\r\n                    onComplete(true, response.body()?.message)\r\n                } else {\r\n                    onComplete(false, response.errorBody()?.string() ?: \"Unknown error\")\r\n                }\r\n            }\r\n\r\n            override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {\r\n                onComplete(false, t.message ?: \"Network error\")\r\n            }\r\n        })\r\n\r\n    }\r\n\r\n    fun bitmapToFile(bitmap: Bitmap, context: Context, fileName: String = \"temp_image.jpg\"): File {\r\n        val file = File(context.cacheDir, fileName)\r\n        file.outputStream().use { out ->\r\n            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)\r\n        }\r\n        return file\r\n    }\r\n\r\n\r\n    fun authenticate(email: String, password: String, onComplete: (Boolean, String?) -> Unit) {\r\n        auth.signInWithEmailAndPassword(email, password)\r\n            .addOnCompleteListener { task ->\r\n                if (task.isSuccessful) {\r\n                    onComplete(true, null)\r\n                } else {\r\n                    onComplete(false, task.exception?.localizedMessage)\r\n                }\r\n            }\r\n    }\r\n    fun loginUser(email: String, password: String, onComplete: (Boolean, String?, Any?) -> Unit) {\r\n        val request = LoginRequest(email, password)\r\n\r\n        RetrofitClient.authApi.login(request).enqueue(object : retrofit2.Callback<LoginResponse> {\r\n            override fun onResponse(call: retrofit2.Call<LoginResponse>, response: Response<LoginResponse>) {\r\n                if (response.isSuccessful && response.body() != null) {\r\n                    val loginResponse = response.body() // this is a function call\r\n                    val accessToken = loginResponse?.accessToken\r\n                    val userId = loginResponse?._id\r\n                    if (accessToken != null && userId != null) {\r\n                        userRepository.getUser(\r\n                            accessToken = accessToken,\r\n                            userId = userId,\r\n                            page = 1\r\n                        ) { success, user, error ->\r\n                            if (success && user != null) {\r\n                                onComplete(true, null, user)\r\n                                Log.d(\"USER\", \"Username: ${user.username}, Profile Pic: ${user.profilePicture}\")\r\n                            } else {\r\n                                Log.e(\"ERROR\", error ?: \"Unknown error\")\r\n                            }\r\n                        }\r\n                    }\r\n\r\n                    onComplete(true, null, null)\r\n                } else {\r\n                    onComplete(false, response.errorBody()?.string() ?: \"Login failed\", null)\r\n                }\r\n            }\r\n\r\n            override fun onFailure(call: retrofit2.Call<LoginResponse>, t: Throwable) {\r\n                onComplete(false, t.message ?: \"Network error\", null)\r\n            }\r\n        })\r\n    }\r\n\r\n\r\n    fun signOut() {\r\n        auth.signOut()\r\n    }\r\n    fun changePassword(newPassword: String ,onComplete: (Boolean, String?) -> Unit){\r\n        val user = auth.currentUser\r\n        user?.let {\r\n            user.updatePassword(newPassword)\r\n                .addOnCompleteListener { task ->\r\n                    if (task.isSuccessful) {\r\n                        onComplete(true, null)\r\n                    } else {\r\n                        onComplete(false, task.exception?.localizedMessage)\r\n                    }\r\n                }\r\n        }\r\n    }\r\n\r\n\r\n    fun isUserLoggedIn(): Boolean = currentUser != null\r\n    fun getCurrentUserEmail(): String {\r\n        val email: String\r\n        if(currentUser!=null){\r\n            email= currentUser!!.email.toString()\r\n        }\r\n        else{\r\n            email=\"\"\r\n        }\r\n        return email\r\n    }\r\n}\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/easeapp/repositories/AuthRepository.kt b/app/src/main/java/com/example/easeapp/repositories/AuthRepository.kt
+--- a/app/src/main/java/com/example/easeapp/repositories/AuthRepository.kt	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/java/com/example/easeapp/repositories/AuthRepository.kt	(date 1743587424914)
+@@ -93,15 +93,21 @@
+                     val loginResponse = response.body() // this is a function call
+                     val accessToken = loginResponse?.accessToken
+                     val userId = loginResponse?._id
++                    val gender =loginResponse?.gender
++                   // val dateOfBirth = loginResponse?.dateOfBirth
++                    val phone = loginResponse?.phone
+                     if (accessToken != null && userId != null) {
+                         userRepository.getUser(
+                             accessToken = accessToken,
+                             userId = userId,
++                            gender=gender?:"",
++                            //dateOfBirth=dateOfBirth?:java.sql.Date.
++                            phone=phone?:"",
+                             page = 1
+                         ) { success, user, error ->
+                             if (success && user != null) {
+                                 onComplete(true, null, user)
+-                                Log.d("USER", "Username: ${user.username}, Profile Pic: ${user.profilePicture}")
++                                Log.d("USER", "Username: ${user.username}, Profile Pic: ${user.profilePicture},Gender:${user.gender}")
+                             } else {
+                                 Log.e("ERROR", error ?: "Unknown error")
+                             }
+Index: app/src/main/java/com/example/easeapp/ui/activities/MainActivity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.ease.ui.activities\r\n\r\nimport android.content.Intent\r\nimport android.os.Bundle\r\nimport androidx.activity.enableEdgeToEdge\r\nimport androidx.activity.viewModels\r\nimport androidx.appcompat.app.AppCompatActivity\r\nimport androidx.core.view.ViewCompat\r\nimport androidx.core.view.WindowInsetsCompat\r\nimport androidx.navigation.NavController\r\nimport androidx.navigation.fragment.findNavController\r\nimport com.example.ease.R\r\nimport com.example.ease.model.local.AppDatabase\r\nimport com.example.ease.model.local.UserEntity\r\nimport com.example.ease.viewmodel.UserViewModel\r\nimport kotlinx.coroutines.launch\r\nimport androidx.lifecycle.lifecycleScope\r\nimport android.view.View\r\nimport android.widget.ImageView\r\nimport androidx.activity.OnBackPressedCallback\r\n\r\nclass MainActivity : AppCompatActivity() {\r\n\r\n    private lateinit var navController: NavController\r\n    private val userViewModel: UserViewModel by viewModels()\r\n\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n\r\n        enableEdgeToEdge()\r\n        setContentView(R.layout.activity_main)\r\n\r\n        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->\r\n            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())\r\n            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)\r\n            insets\r\n        }\r\n\r\n        navController = supportFragmentManager.findFragmentById(R.id.nav_host_fragment)?.findNavController()\r\n            ?: throw IllegalStateException(\"NavController not found\")\r\n\r\n        // כפתור מעבר לפרופיל (אם קיים)\r\n        findViewById<ImageView>(R.id.profile_icon).setOnClickListener {\r\n            if (navController.currentDestination?.id != R.id.myProfileFragment) {\r\n                navController.navigate(R.id.myProfileFragment)\r\n            }\r\n        }\r\n\r\n        // back button → חוזר למסך פרופיל\r\n        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {\r\n            override fun handleOnBackPressed() {\r\n                if (navController.currentDestination?.id != R.id.myProfileFragment) {\r\n                    navController.navigate(R.id.myProfileFragment)\r\n                } else {\r\n                    finish()\r\n                }\r\n            }\r\n        })\r\n\r\n        // טוען משתמש מקאש\r\n        userViewModel.fetchUser()\r\n        userViewModel.user.observe(this) { user ->\r\n            if (user != null) {\r\n                val name = user[\"name\"].toString()\r\n                val email = user[\"email\"].toString()\r\n                val image = user[\"image\"] as? String\r\n                lifecycleScope.launch {\r\n                    val userDao = AppDatabase.getInstance(applicationContext).userDao()\r\n                    userDao.clear()\r\n                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))\r\n                }\r\n            }\r\n        }\r\n    }\r\n\r\n    fun editProfileButtonClicked() {\r\n        navController.navigate(R.id.editProfileFragment)\r\n    }\r\n\r\n    fun myProfilePageButtonClicked() {\r\n        navController.navigate(R.id.myProfileFragment)\r\n    }\r\n\r\n    fun navigateToLogin() {\r\n        val intent = Intent(this, LoginRegisterActivity::class.java)\r\n        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK\r\n        startActivity(intent)\r\n        finish()\r\n    }\r\n\r\n    fun refreshProfile() {\r\n        userViewModel.fetchUser()\r\n        userViewModel.user.observe(this) { user ->\r\n            if (user != null) {\r\n                val name = user[\"name\"].toString()\r\n                val email = user[\"email\"].toString()\r\n                val image = user[\"image\"] as? String\r\n                lifecycleScope.launch {\r\n                    val userDao = AppDatabase.getInstance(applicationContext).userDao()\r\n                    userDao.clear()\r\n                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))\r\n                }\r\n            }\r\n        }\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/easeapp/ui/activities/MainActivity.kt b/app/src/main/java/com/example/easeapp/ui/activities/MainActivity.kt
+--- a/app/src/main/java/com/example/easeapp/ui/activities/MainActivity.kt	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/java/com/example/easeapp/ui/activities/MainActivity.kt	(date 1743587754531)
+@@ -64,10 +64,12 @@
+                 val name = user["name"].toString()
+                 val email = user["email"].toString()
+                 val image = user["image"] as? String
++                val gender = user["gender"] as? String
++                val phone = user["phone"] as? String
+                 lifecycleScope.launch {
+                     val userDao = AppDatabase.getInstance(applicationContext).userDao()
+                     userDao.clear()
+-                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image))
++                    userDao.insert(UserEntity(email = email, name = name, profileImageUrl = image,gender=gender,phone=phone))
+                 }
+             }
+         }
+Index: app/src/main/java/com/example/easeapp/model/local/userEntity.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.ease.model.local\r\n\r\nimport androidx.room.Entity\r\nimport androidx.room.PrimaryKey\r\n\r\n@Entity(tableName = \"user\")\r\ndata class UserEntity(\r\n    @PrimaryKey val email: String,\r\n    val name: String,\r\n    val profileImageUrl: String? = null\r\n)\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/easeapp/model/local/userEntity.kt b/app/src/main/java/com/example/easeapp/model/local/userEntity.kt
+--- a/app/src/main/java/com/example/easeapp/model/local/userEntity.kt	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/java/com/example/easeapp/model/local/userEntity.kt	(date 1743587004961)
+@@ -7,6 +7,10 @@
+ data class UserEntity(
+     @PrimaryKey val email: String,
+     val name: String,
+-    val profileImageUrl: String? = null
++    val profileImageUrl: String? = null,
++    //val dateOfBirth: String? = null,
++    val phone:String? = null,
++    val gender: String? = null
++
+ )
+ 
+Index: app/src/main/java/com/example/easeapp/ui/auth/MyProfileFragment.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.ease.ui.auth\r\n\r\nimport android.os.Bundle\r\nimport androidx.fragment.app.Fragment\r\nimport android.view.LayoutInflater\r\nimport android.view.View\r\nimport android.view.ViewGroup\r\nimport android.widget.Button\r\nimport android.widget.ImageView\r\nimport android.widget.ProgressBar\r\nimport android.widget.TextView\r\nimport android.widget.Toast\r\nimport androidx.fragment.app.viewModels\r\nimport androidx.lifecycle.lifecycleScope\r\nimport com.example.ease.ui.activities.MainActivity\r\nimport com.example.ease.R\r\nimport com.example.ease.repositories.AuthRepository\r\nimport com.example.ease.model.User\r\nimport com.example.ease.model.local.AppDatabase\r\nimport com.example.ease.viewmodel.AuthViewModel\r\nimport com.example.ease.viewmodel.UserViewModel\r\nimport com.squareup.picasso.Picasso\r\nimport jp.wasabeef.picasso.transformations.CropCircleTransformation\r\nimport kotlinx.coroutines.launch\r\n\r\n// TODO: Rename parameter arguments, choose names that match\r\n// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER\r\nprivate const val ARG_PARAM1 = \"param1\"\r\nprivate const val ARG_PARAM2 = \"param2\"\r\n\r\n/**\r\n * A simple [Fragment] subclass.\r\n * Use the [myProfileFragment.newInstance] factory method to\r\n * create an instance of this fragment.\r\n */\r\nclass myProfileFragment : Fragment() {\r\n    // TODO: Rename and change types of parameters\r\n    private var param1: String? = null\r\n    private var param2: String? = null\r\n    private lateinit var progressBar: ProgressBar\r\n    override fun onCreate(savedInstanceState: Bundle?) {\r\n        super.onCreate(savedInstanceState)\r\n        arguments?.let {\r\n            param1 = it.getString(ARG_PARAM1)\r\n            param2 = it.getString(ARG_PARAM2)\r\n        }\r\n    }\r\n\r\n    override fun onCreateView(\r\n        inflater: LayoutInflater, container: ViewGroup?,\r\n        savedInstanceState: Bundle?\r\n    ): View? {\r\n        // Inflate the layout for this fragment and check if the edit button is clicked\r\n        val view = inflater.inflate(R.layout.fragment_my_profile, container, false)\r\n        val editButton: TextView = view.findViewById(R.id.editButton)\r\n        editButton.setOnClickListener {\r\n            (activity as? MainActivity)?.editProfileButtonClicked()\r\n        }\r\n\r\n        val profileImage = view.findViewById<ImageView>(R.id.profileImage)\r\n        progressBar = view.findViewById(R.id.profileImageProgressBar)\r\n        val userViewModel: UserViewModel by viewModels()\r\n        val profileName = view.findViewById<TextView>(R.id.profileName)\r\n        val profileEmail=view.findViewById<TextView>(R.id.profileEmail)\r\n//        profileName.text = (activity as? MainActivity)?.getUserName()\r\n        val userDao = AppDatabase.getInstance(requireContext()).userDao()\r\n        progressBar.visibility = View.VISIBLE\r\n        profileImage.visibility=View.GONE\r\n        lifecycleScope.launch {\r\n\r\n            val user = userDao.getCurrentUser()\r\n            profileName.text = user?.name ?: \"Guest\"\r\n            profileEmail.text = user?.email ?: \"\"\r\n            var imageUrl = user?.profileImageUrl\r\n            imageUrl=fixImageUrl(imageUrl.toString())\r\n            if (imageUrl != null){\r\n                Picasso.get().load(imageUrl).transform(CropCircleTransformation()).into(profileImage)\r\n            }\r\n            else{\r\n                profileImage.setImageResource(R.drawable.account)\r\n            }\r\n\r\n            progressBar.visibility = View.GONE\r\n            profileImage.visibility=View.VISIBLE\r\n        }\r\n            /* userServer.getProfileImage { uri ->\r\n            if (uri != null) {\r\n\r\n                Picasso.get().load(uri).transform(CropCircleTransformation()).into(profileImage)\r\n                progressBar.visibility = View.GONE\r\n                profileImage.visibility=View.VISIBLE\r\n\r\n            }\r\n            else{\r\n                progressBar.visibility = View.GONE\r\n                profileImage.visibility=View.VISIBLE\r\n\r\n            }\r\n        }*/\r\n\r\n\r\n\r\n        val logOutbtn=view.findViewById<Button>(R.id.logoutButton)\r\n        val autViewModel: AuthViewModel by viewModels()\r\n        logOutbtn.setOnClickListener {\r\n            lifecycleScope.launch {\r\n                AppDatabase.getInstance(requireContext()).userDao().clear()\r\n            }\r\n            autViewModel.signOut()\r\n            Toast.makeText(context,\"You logged out, have a great day\", Toast.LENGTH_LONG).show()\r\n            (activity as? MainActivity)?.navigateToLogin()\r\n        }\r\n\r\n//        profileEmail.text = (activity as? MainActivity)?.getUserEmail()\r\n\r\n\r\n        return view\r\n    }\r\n\r\n    fun fixImageUrl(oldUrl: String): String {\r\n        return oldUrl.replace(\"http://localhost:3000\", \"http://10.0.2.2:3000\")\r\n    }\r\n\r\n    companion object {\r\n        /**\r\n         * Use this factory method to create a new instance of\r\n         * this fragment using the provided parameters.\r\n         *\r\n         * @param param1 Parameter 1.\r\n         * @param param2 Parameter 2.\r\n         * @return A new instance of fragment myProfileFragment.\r\n         */\r\n        // TODO: Rename and change types and number of parameters\r\n        @JvmStatic\r\n        fun newInstance(param1: String, param2: String) =\r\n            myProfileFragment().apply {\r\n                arguments = Bundle().apply {\r\n                    putString(ARG_PARAM1, param1)\r\n                    putString(ARG_PARAM2, param2)\r\n                }\r\n            }\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/easeapp/ui/auth/MyProfileFragment.kt b/app/src/main/java/com/example/easeapp/ui/auth/MyProfileFragment.kt
+--- a/app/src/main/java/com/example/easeapp/ui/auth/MyProfileFragment.kt	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/java/com/example/easeapp/ui/auth/MyProfileFragment.kt	(date 1743587059086)
+@@ -62,6 +62,9 @@
+         val userViewModel: UserViewModel by viewModels()
+         val profileName = view.findViewById<TextView>(R.id.profileName)
+         val profileEmail=view.findViewById<TextView>(R.id.profileEmail)
++        val profileDateOfBirth = view.findViewById<TextView>(R.id.profileDateOfBirth)
++        val gender = view.findViewById<TextView>(R.id.profileGender)
++        val phone = view.findViewById<TextView>(R.id.profilePhone)
+ //        profileName.text = (activity as? MainActivity)?.getUserName()
+         val userDao = AppDatabase.getInstance(requireContext()).userDao()
+         progressBar.visibility = View.VISIBLE
+@@ -71,6 +74,8 @@
+             val user = userDao.getCurrentUser()
+             profileName.text = user?.name ?: "Guest"
+             profileEmail.text = user?.email ?: ""
++            gender.text=user?.gender ?: ""
++            phone.text=user?.phone ?: ""
+             var imageUrl = user?.profileImageUrl
+             imageUrl=fixImageUrl(imageUrl.toString())
+             if (imageUrl != null){
+Index: app/src/main/java/com/example/easeapp/model/local/AppDatabase.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.ease.model.local\r\n\r\n\r\nimport android.content.Context\r\nimport androidx.room.Database\r\nimport androidx.room.Room\r\nimport androidx.room.RoomDatabase\r\nimport androidx.room.migration.Migration\r\nimport androidx.sqlite.db.SupportSQLiteDatabase\r\n\r\n@Database(entities = [UserEntity::class], version = 2)\r\nabstract class AppDatabase : RoomDatabase() {\r\n    abstract fun userDao(): UserDao\r\n\r\n    companion object {\r\n        val MIGRATION_1_2 = object : Migration(1, 2) {\r\n            override fun migrate(database: SupportSQLiteDatabase) {\r\n                //database.execSQL(\"ALTER TABLE user ADD COLUMN profileImageUrl TEXT\")\r\n\r\n            }\r\n        }\r\n        @Volatile private var INSTANCE: AppDatabase? = null\r\n\r\n\r\n        fun getInstance(context: Context): AppDatabase =\r\n            INSTANCE ?: synchronized(this) {\r\n                INSTANCE ?: Room.databaseBuilder(\r\n                    context.applicationContext,\r\n                    AppDatabase::class.java,\r\n                    \"ease_db\"\r\n                )\r\n                    .addMigrations(MIGRATION_1_2)\r\n                    .fallbackToDestructiveMigration()\r\n                    .build().also { INSTANCE = it }\r\n            }\r\n\r\n    }\r\n}\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/easeapp/model/local/AppDatabase.kt b/app/src/main/java/com/example/easeapp/model/local/AppDatabase.kt
+--- a/app/src/main/java/com/example/easeapp/model/local/AppDatabase.kt	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/java/com/example/easeapp/model/local/AppDatabase.kt	(date 1743589828925)
+@@ -8,7 +8,7 @@
+ import androidx.room.migration.Migration
+ import androidx.sqlite.db.SupportSQLiteDatabase
+ 
+-@Database(entities = [UserEntity::class], version = 2)
++@Database(entities = [UserEntity::class], version = 5)
+ abstract class AppDatabase : RoomDatabase() {
+     abstract fun userDao(): UserDao
+ 
+@@ -16,6 +16,8 @@
+         val MIGRATION_1_2 = object : Migration(1, 2) {
+             override fun migrate(database: SupportSQLiteDatabase) {
+                 //database.execSQL("ALTER TABLE user ADD COLUMN profileImageUrl TEXT")
++                database.execSQL("ALTER table user ADD COLUMN phone TEXT")
++                database.execSQL("ALTER table user ADD COLUMN gender TEXT")
+ 
+             }
+         }
+@@ -29,7 +31,7 @@
+                     AppDatabase::class.java,
+                     "ease_db"
+                 )
+-                    .addMigrations(MIGRATION_1_2)
++                    //.addMigrations(MIGRATION_1_2)
+                     .fallbackToDestructiveMigration()
+                     .build().also { INSTANCE = it }
+             }
+Index: app/src/main/java/com/example/easeapp/model/requests/authRequests.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.easeapp.model.requests\r\n//LOGIN\r\ndata class LoginRequest(\r\n    val email: String,\r\n    val password: String\r\n)\r\n\r\ndata class LoginResponse(\r\n    val accessToken: String,\r\n    val refreshToken: String,\r\n    val _id: String,\r\n    val username: String,\r\n    val role: String,\r\n    val isAuthenticated: Boolean,\r\n    val likedPosts: List<String>\r\n)\r\n//REGISTER\r\ndata class RegisterRequest(\r\n    val username: String,\r\n    val email: String,\r\n    val password: String\r\n)\r\n\r\ndata class RegisterResponse(\r\n    val message: String,\r\n    val user: RegisteredUser\r\n)\r\n\r\ndata class RegisteredUser(\r\n    val username: String,\r\n    val email: String,\r\n    val _id: String,\r\n    val profilePicture: String,\r\n    val role: String\r\n)\r\n\r\n//GET USER\r\ndata class UserProfileResponse(\r\n    val user: UserDetails\r\n)\r\n\r\ndata class UserDetails(\r\n    val _id: String,\r\n    val username: String,\r\n    val email: String,\r\n    val role: String,\r\n    val profilePicture: String?\r\n)\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/easeapp/model/requests/authRequests.kt b/app/src/main/java/com/example/easeapp/model/requests/authRequests.kt
+--- a/app/src/main/java/com/example/easeapp/model/requests/authRequests.kt	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/java/com/example/easeapp/model/requests/authRequests.kt	(date 1743587424921)
+@@ -1,4 +1,7 @@
+ package com.example.easeapp.model.requests
++
++import java.sql.Date
++
+ //LOGIN
+ data class LoginRequest(
+     val email: String,
+@@ -12,7 +15,9 @@
+     val username: String,
+     val role: String,
+     val isAuthenticated: Boolean,
+-    val likedPosts: List<String>
++    val likedPosts: List<String>,
++    val gender : String?,
++    val phone: String?,
+ )
+ //REGISTER
+ data class RegisterRequest(
+@@ -44,6 +49,8 @@
+     val username: String,
+     val email: String,
+     val role: String,
++    val gender: String?,
++    val phone: String?,
+     val profilePicture: String?
+ )
+ 
+Index: secrets.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>GOOGLE_CLIENT_ID=\"839756644672-gja8ni4skviq8nnoavbtql2091blmtl3.apps.googleusercontent.com\"
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/secrets.properties b/secrets.properties
+--- a/secrets.properties	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/secrets.properties	(date 1743582805772)
+@@ -1,1 +1,1 @@
+-GOOGLE_CLIENT_ID="839756644672-gja8ni4skviq8nnoavbtql2091blmtl3.apps.googleusercontent.com"
+\ No newline at end of file
++GOOGLE_CLIENT_ID="839756644672-gja8ni4skviq8nnoavbtql2091blmtl3.apps.googleusercontent.com"
+Index: app/src/main/java/com/example/easeapp/model/User.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.ease.model\r\n\r\nimport android.graphics.Bitmap\r\nimport android.util.Log\r\nimport com.example.ease.repositories.AuthRepository\r\nimport com.example.easeapp.model.requests.RetrofitClient\r\nimport com.example.easeapp.model.requests.RetrofitClientUser\r\nimport com.example.easeapp.model.requests.UserDetails\r\nimport com.example.easeapp.model.requests.UserProfileResponse\r\nimport com.google.firebase.firestore.ktx.firestore\r\nimport com.google.firebase.ktx.Firebase\r\nimport retrofit2.Call\r\nimport retrofit2.Callback\r\nimport retrofit2.Response\r\n\r\nclass User {\r\n    var auth = AuthRepository.shared\r\n\r\n    companion object {\r\n        val shared = User()\r\n    }\r\n\r\n    val db = Firebase.firestore\r\n    val cloudinaryModel = CloudinaryModel()\r\n    fun createUser(name: String, email: String,bitmap: Bitmap?, onComplete: (Boolean, String?) -> Unit) {\r\n        var imageUrl: String? = null\r\n        if(bitmap!=null){\r\n            uploadImageToCloudinary(bitmap, auth.getCurrentUserEmail(), { uri ->\r\n                if (!uri.isNullOrBlank()) {\r\n                    imageUrl = uri\r\n                    val user = hashMapOf(\r\n                        \"name\" to name,\r\n                        \"email\" to email,\r\n                        \"image\" to imageUrl\r\n                    )\r\n                    db.collection(\"users\")\r\n                        .add(user)\r\n                        .addOnSuccessListener { documentReference ->\r\n                            onComplete(true, null)\r\n                        }\r\n                        .addOnFailureListener { e ->\r\n                            onComplete(false, e.localizedMessage)\r\n                        }\r\n\r\n                } else {\r\n                    onComplete(false, \"Error uploading image\")\r\n                }\r\n            }, { error ->\r\n                onComplete(false, error)\r\n            })\r\n        }\r\n        else{\r\n            val user = hashMapOf(\r\n                \"name\" to name,\r\n                \"email\" to email,\r\n            )\r\n            db.collection(\"users\")\r\n                .add(user)\r\n                .addOnSuccessListener { documentReference ->\r\n                    onComplete(true, null)\r\n                }\r\n                .addOnFailureListener { e ->\r\n                    onComplete(false, e.localizedMessage)\r\n                }\r\n        }\r\n\r\n\r\n    }\r\n\r\n    fun getUser(\r\n        accessToken: String,\r\n        userId: String,\r\n        page: Int = 1,\r\n        onComplete: (Boolean, UserDetails?, String?) -> Unit\r\n    ) {\r\n        val authHeader = \"Bearer $accessToken\"\r\n\r\n        RetrofitClientUser.userApi.getUserProfile(authHeader, userId, page).enqueue(object :\r\n            Callback<UserProfileResponse> {\r\n            override fun onResponse(call: Call<UserProfileResponse>, response: Response<UserProfileResponse>) {\r\n                if (response.isSuccessful && response.body() != null) {\r\n                    onComplete(true, response.body()!!.user, null)\r\n                } else {\r\n                    onComplete(false, null, response.errorBody()?.string() ?: \"Failed to fetch profile\")\r\n                }\r\n            }\r\n\r\n            override fun onFailure(call: Call<UserProfileResponse>, t: Throwable) {\r\n                onComplete(false, null, t.message ?: \"Network error\")\r\n            }\r\n        })\r\n    }\r\n\r\n    fun getUserByEmail(email: String, onComplete: (Map<String, Any>?) -> Unit) {\r\n        db.collection(\"users\")\r\n            .whereEqualTo(\"email\", email)\r\n            .get()\r\n            .addOnSuccessListener { documents ->\r\n                if (!documents.isEmpty) {\r\n                    val userDocument = documents.documents[0]\r\n                    val userData = userDocument.data\r\n                    onComplete(userData)\r\n                } else {\r\n                    onComplete(null)\r\n                }\r\n            }\r\n            .addOnFailureListener { e ->\r\n                onComplete(null)\r\n            }\r\n    }\r\n    fun getProfileImage(onComplete: (String?) -> Unit) {\r\n\r\n    }\r\n\r\n    fun editUser(currentPassword: String, name: String, password: String, image: Bitmap?, onComplete: (Boolean, String?) -> Unit) {\r\n        val userEmail = auth.currentUser?.email\r\n        if (userEmail != null && currentPassword.isNotEmpty()) {\r\n            auth.authenticate(userEmail, currentPassword) { success, error ->\r\n                if (success) {\r\n                    db.collection(\"users\")\r\n                        .whereEqualTo(\"email\", userEmail)\r\n                        .get()\r\n                        .addOnSuccessListener { documents ->\r\n                            if (!documents.isEmpty) {\r\n                                val userDocument = documents.documents[0]\r\n                                val documentReference = userDocument.reference\r\n                                var updateCount = 0\r\n                                var totalUpdates = 0\r\n                                var hasError = false\r\n\r\n                                // Count the number of updates needed\r\n                                if (password.isNotEmpty()) totalUpdates++\r\n                                if (name.isNotEmpty()) totalUpdates++\r\n                                if (image != null) totalUpdates++\r\n\r\n                                // Function to check completion\r\n                                fun checkCompletion() {\r\n                                    if (updateCount == totalUpdates && !hasError) {\r\n                                        onComplete(true, null)\r\n                                    } else if (hasError) {\r\n                                        onComplete(false, \"An error occurred while updating the profile.\")\r\n                                    }\r\n                                }\r\n\r\n                                // Update password if it's not empty\r\n                                if (password.isNotEmpty()) {\r\n                                    auth.changePassword(password) { success, error ->\r\n                                        if (success) {\r\n                                            Log.d(\"Firestore\", \"Password changed\")\r\n                                        } else {\r\n                                            hasError = true\r\n                                        }\r\n                                        updateCount++\r\n                                        checkCompletion()\r\n                                    }\r\n                                }\r\n\r\n                                // Update name if it's not empty\r\n                                if (name.isNotEmpty()) {\r\n                                    documentReference.update(\"name\", name)\r\n                                        .addOnSuccessListener {\r\n                                            Log.d(\"Firestore\", \"Name updated\")\r\n                                            updateCount++\r\n                                            checkCompletion()\r\n                                        }\r\n                                        .addOnFailureListener { e ->\r\n                                            hasError = true\r\n                                            updateCount++\r\n                                            checkCompletion()\r\n                                        }\r\n                                }\r\n\r\n                                // Update image if it's not null\r\n                                if (image != null) {\r\n                                    val previousImageUrl = userDocument.getString(\"image\")\r\n                                    val uploadImage = { bitmap: Bitmap ->\r\n                                        uploadImageToCloudinary(bitmap, auth.getCurrentUserEmail(), { uri ->\r\n                                            if (!uri.isNullOrBlank()) {\r\n                                                documentReference.update(\"image\", uri)\r\n                                                    .addOnSuccessListener {\r\n                                                        Log.d(\"Firestore\", \"Image updated\")\r\n                                                        updateCount++\r\n                                                        checkCompletion()\r\n                                                    }\r\n                                                    .addOnFailureListener { e ->\r\n                                                        hasError = true\r\n                                                        updateCount++\r\n                                                        checkCompletion()\r\n                                                    }\r\n                                            } else {\r\n                                                hasError = true\r\n                                                updateCount++\r\n                                                checkCompletion()\r\n                                            }\r\n                                        }, { error ->\r\n                                            hasError = true\r\n                                            updateCount++\r\n                                            checkCompletion()\r\n                                        })\r\n                                    }\r\n\r\n                                    if (!previousImageUrl.isNullOrEmpty()) {\r\n                                        cloudinaryModel.deleteImage(previousImageUrl) { deleteSuccess, deleteError ->\r\n                                            if (deleteSuccess) {\r\n                                                uploadImage(image)\r\n                                            } else {\r\n                                                hasError = true\r\n                                                updateCount++\r\n                                                checkCompletion()\r\n                                            }\r\n                                        }\r\n                                    } else {\r\n                                        uploadImage(image)\r\n                                    }\r\n                                }\r\n\r\n                                // If no updates were needed, return early\r\n                                if (totalUpdates == 0) {\r\n                                    onComplete(false, \"No changes were made\")\r\n                                }\r\n                            } else {\r\n                                onComplete(false, \"User not found\")\r\n                            }\r\n                        }\r\n                        .addOnFailureListener { e ->\r\n                            onComplete(false, e.localizedMessage)\r\n                        }\r\n                } else {\r\n                    onComplete(false, error)\r\n                }\r\n            }\r\n\r\n        } else {\r\n            onComplete(false, \"User email is null\")\r\n        }\r\n    }\r\n\r\n\r\n    fun uploadImageToCloudinary(\r\n        bitmap: Bitmap,\r\n        name: String,\r\n        onSuccess: (String?) -> Unit,\r\n        onError: (String?) -> Unit\r\n    ) {\r\n        cloudinaryModel.uploadImage(bitmap, name, onSuccess, onError)\r\n    }\r\n}\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/easeapp/model/User.kt b/app/src/main/java/com/example/easeapp/model/User.kt
+--- a/app/src/main/java/com/example/easeapp/model/User.kt	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/java/com/example/easeapp/model/User.kt	(date 1743587071417)
+@@ -70,7 +70,12 @@
+     fun getUser(
+         accessToken: String,
+         userId: String,
++        phone:String,
++
++        gender:String,
++
+         page: Int = 1,
++
+         onComplete: (Boolean, UserDetails?, String?) -> Unit
+     ) {
+         val authHeader = "Bearer $accessToken"
+Index: app/src/main/res/layout/fragment_my_profile.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><FrameLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\r\n    xmlns:app=\"http://schemas.android.com/apk/res-auto\"\r\n    xmlns:tools=\"http://schemas.android.com/tools\"\r\n    android:layout_width=\"match_parent\"\r\n    android:layout_height=\"match_parent\"\r\n    android:background=\"#FFFFFF\"\r\n    tools:context=\".ProfileFragment\">\r\n\r\n    <!-- צורה כחולה ברקע -->\r\n    <ImageView\r\n        android:id=\"@+id/imageView\"\r\n        android:layout_width=\"270dp\"\r\n        android:layout_height=\"238dp\"\r\n        android:layout_gravity=\"top|start\"\r\n        android:src=\"@drawable/blue_shape_template\"\r\n        android:scaleType=\"fitXY\" />\r\n\r\n    <!-- תוכן המסך -->\r\n    <ScrollView\r\n        android:layout_width=\"match_parent\"\r\n        android:layout_height=\"match_parent\">\r\n\r\n        <LinearLayout\r\n            android:layout_width=\"match_parent\"\r\n            android:layout_height=\"wrap_content\"\r\n            android:orientation=\"vertical\"\r\n            android:padding=\"24dp\"\r\n            android:gravity=\"center_horizontal\">\r\n\r\n            <!-- כפתור חזרה -->\r\n            <ImageView\r\n                android:id=\"@+id/backButton\"\r\n                android:layout_width=\"24dp\"\r\n                android:layout_height=\"24dp\"\r\n                android:layout_gravity=\"start\"\r\n                android:layout_marginBottom=\"8dp\"\r\n                android:src=\"@drawable/ic_back_arrow\" />\r\n\r\n            <!-- כותרת -->\r\n            <TextView\r\n                android:id=\"@+id/profileTitle\"\r\n                android:layout_width=\"wrap_content\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:text=\"My Profile\"\r\n                android:textSize=\"20sp\"\r\n                android:textStyle=\"bold\"\r\n                android:textColor=\"#000000\"\r\n                android:layout_marginBottom=\"16dp\" />\r\n\r\n            <!-- תמונת פרופיל -->\r\n            <FrameLayout\r\n                android:layout_width=\"140dp\"\r\n                android:layout_height=\"140dp\"\r\n                android:layout_marginBottom=\"24dp\">\r\n\r\n                <ImageView\r\n                    android:id=\"@+id/profileImage\"\r\n                    android:layout_width=\"match_parent\"\r\n                    android:layout_height=\"match_parent\"\r\n                    android:scaleType=\"centerCrop\"\r\n                    android:padding=\"4dp\"\r\n                    android:background=\"@drawable/circle_white_border\" />\r\n\r\n                <ProgressBar\r\n                    android:id=\"@+id/profileImageProgressBar\"\r\n                    android:layout_width=\"wrap_content\"\r\n                    android:layout_height=\"wrap_content\"\r\n                    android:layout_gravity=\"center\"\r\n                    android:visibility=\"gone\"\r\n                    style=\"?android:attr/progressBarStyleLarge\" />\r\n            </FrameLayout>\r\n\r\n            <!-- שדות -->\r\n            <TextView\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:text=\"Name\"\r\n                android:textSize=\"14sp\"\r\n                android:textStyle=\"bold\"\r\n                android:textColor=\"#000000\"\r\n                android:layout_marginBottom=\"4dp\" />\r\n\r\n            <TextView\r\n                android:id=\"@+id/profileName\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"48dp\"\r\n                android:gravity=\"center_vertical\"\r\n                android:paddingStart=\"12dp\"\r\n                android:textColor=\"#000000\"\r\n                android:textSize=\"16sp\"\r\n                android:layout_marginBottom=\"12dp\"\r\n                android:background=\"@drawable/profile_input_bg\" />\r\n\r\n            <TextView\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:text=\"Email\"\r\n                android:textSize=\"14sp\"\r\n                android:textStyle=\"bold\"\r\n                android:textColor=\"#000000\"\r\n                android:layout_marginBottom=\"4dp\" />\r\n\r\n            <TextView\r\n                android:id=\"@+id/profileEmail\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"48dp\"\r\n                android:gravity=\"center_vertical\"\r\n                android:paddingStart=\"12dp\"\r\n                android:textColor=\"#000000\"\r\n                android:textSize=\"16sp\"\r\n                android:layout_marginBottom=\"12dp\"\r\n                android:background=\"@drawable/profile_input_bg\" />\r\n\r\n            <TextView\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:text=\"Username\"\r\n                android:textSize=\"14sp\"\r\n                android:textStyle=\"bold\"\r\n                android:textColor=\"#000000\"\r\n                android:layout_marginBottom=\"4dp\" />\r\n\r\n            <TextView\r\n                android:id=\"@+id/profileUsername\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"48dp\"\r\n                android:gravity=\"center_vertical\"\r\n                android:paddingStart=\"12dp\"\r\n                android:textColor=\"#000000\"\r\n                android:textSize=\"16sp\"\r\n                android:layout_marginBottom=\"12dp\"\r\n                android:background=\"@drawable/profile_input_bg\" />\r\n\r\n            <TextView\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:text=\"Date of Birth\"\r\n                android:textSize=\"14sp\"\r\n                android:textStyle=\"bold\"\r\n                android:textColor=\"#000000\"\r\n                android:layout_marginBottom=\"4dp\" />\r\n\r\n            <TextView\r\n                android:id=\"@+id/profileDate\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"48dp\"\r\n                android:gravity=\"center_vertical\"\r\n                android:paddingStart=\"12dp\"\r\n                android:textColor=\"#000000\"\r\n                android:textSize=\"16sp\"\r\n                android:layout_marginBottom=\"12dp\"\r\n                android:background=\"@drawable/profile_input_bg\" />\r\n\r\n            <TextView\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:text=\"Gender\"\r\n                android:textSize=\"14sp\"\r\n                android:textStyle=\"bold\"\r\n                android:textColor=\"#000000\"\r\n                android:layout_marginBottom=\"4dp\" />\r\n\r\n            <TextView\r\n                android:id=\"@+id/profileGender\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"48dp\"\r\n                android:gravity=\"center_vertical\"\r\n                android:paddingStart=\"12dp\"\r\n                android:textColor=\"#000000\"\r\n                android:textSize=\"16sp\"\r\n                android:layout_marginBottom=\"24dp\"\r\n                android:background=\"@drawable/profile_input_bg\" />\r\n\r\n            <!-- כפתור עריכה -->\r\n            <Button\r\n                android:id=\"@+id/editButton\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"50dp\"\r\n                android:text=\"Edit\"\r\n                android:textColor=\"#FFFFFF\"\r\n                android:textAllCaps=\"false\"\r\n                android:textSize=\"16sp\"\r\n                android:background=\"@drawable/profile_edit_button_bg\"\r\n                android:layout_marginBottom=\"12dp\" />\r\n\r\n            <!-- כפתור Logout -->\r\n            <Button\r\n                android:id=\"@+id/logoutButton\"\r\n                android:layout_width=\"match_parent\"\r\n                android:layout_height=\"wrap_content\"\r\n                android:layout_marginTop=\"52dp\"\r\n                android:layout_marginBottom=\"16dp\"\r\n                android:backgroundTint=\"#FADBD8\"\r\n                android:drawableLeft=\"@drawable/logout\"\r\n                android:drawablePadding=\"8dp\"\r\n                android:text=\"Log Out\"\r\n                android:textColor=\"#C0392B\" />\r\n        </LinearLayout>\r\n    </ScrollView>\r\n</FrameLayout>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/layout/fragment_my_profile.xml b/app/src/main/res/layout/fragment_my_profile.xml
+--- a/app/src/main/res/layout/fragment_my_profile.xml	(revision 4186ab53a5cb12f7a7617b8ed4a498dc2e060686)
++++ b/app/src/main/res/layout/fragment_my_profile.xml	(date 1743584071617)
+@@ -114,14 +114,14 @@
+             <TextView
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+-                android:text="Username"
++                android:text="Phone"
+                 android:textSize="14sp"
+                 android:textStyle="bold"
+                 android:textColor="#000000"
+                 android:layout_marginBottom="4dp" />
+ 
+             <TextView
+-                android:id="@+id/profileUsername"
++                android:id="@+id/profilePhone"
+                 android:layout_width="match_parent"
+                 android:layout_height="48dp"
+                 android:gravity="center_vertical"
+@@ -141,7 +141,7 @@
+                 android:layout_marginBottom="4dp" />
+ 
+             <TextView
+-                android:id="@+id/profileDate"
++                android:id="@+id/profileDateOfBirth"
+                 android:layout_width="match_parent"
+                 android:layout_height="48dp"
+                 android:gravity="center_vertical"
+Index: app/src/main/res/drawable/iconttest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/drawable/iconttest.xml b/app/src/main/res/drawable/iconttest.xml
+new file mode 100644
+--- /dev/null	(date 1743589642752)
++++ b/app/src/main/res/drawable/iconttest.xml	(date 1743589642752)
+@@ -0,0 +1,11 @@
++<RelativeLayout
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/vuesax_line"
++    android:layout_width="0dp"
++    android:layout_height="0dp"
++    android:layout_alignParentLeft="true"
++    android:layout_alignParentRight="true"
++    android:layout_alignParentTop="true"
++    android:layout_alignParentBottom="true"
++    />
++
