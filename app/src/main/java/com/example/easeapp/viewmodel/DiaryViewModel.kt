@@ -11,6 +11,7 @@ import android.content.Context
 import android.widget.Toast
 import com.example.easeapp.model.DiaryModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DiaryViewModel : ViewModel() {
 
@@ -37,9 +38,12 @@ class DiaryViewModel : ViewModel() {
             val diaryRepo = DiaryRepo(context)
             val result = diaryRepo.deleteDiary(diaryId)
 
-            if (result == "Success") {
+            if (result == "Diary entry deleted successfully") {
                 _diaryDeleted.postValue(Result.success(true))
-                Toast.makeText(context, "Diary entry deleted successfully", Toast.LENGTH_SHORT).show()
+                loadUserDiaries(context)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Diary entry deleted successfully", Toast.LENGTH_SHORT).show()
+                }
             } else {
                 _diaryDeleted.postValue(Result.failure(Throwable(result.toString())))
             }

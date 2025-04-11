@@ -20,9 +20,10 @@ import kotlinx.coroutines.withContext
 
 // נתוני המודל
 data class DiaryModel(
+    val _id: String? = null,
     val context: String,
     val date: Date,
-    val authorId: String
+    val authorId: String,
 )
 
 data class DiaryResponse(
@@ -52,6 +53,7 @@ private val context: Context
                 context = diaryText,
                 date = Date(),
                 authorId = currentUser._id ?: ""
+
             )
 
             val response = api.addDiary(request, token)

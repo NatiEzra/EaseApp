@@ -1,0 +1,52 @@
+Index: .idea/inspectionProfiles/Project_Default.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/inspectionProfiles/Project_Default.xml b/.idea/inspectionProfiles/Project_Default.xml
+new file mode 100644
+--- /dev/null	(date 1743952117078)
++++ b/.idea/inspectionProfiles/Project_Default.xml	(date 1743952117078)
+@@ -0,0 +1,6 @@
++<component name="InspectionProjectProfileManager">
++  <profile version="1.0">
++    <option name="myName" value="Project Default" />
++    <inspection_tool class="AndroidLintUnsafeImplicitIntentLaunch" enabled="true" level="ERROR" enabled_by_default="true" />
++  </profile>
++</component>
+\ No newline at end of file
+Index: secrets.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>GOOGLE_CLIENT_ID=\"839756644672-gja8ni4skviq8nnoavbtql2091blmtl3.apps.googleusercontent.com\"
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/secrets.properties b/secrets.properties
+--- a/secrets.properties	(revision 0cacfff2d5ecd6376616a8f5f87be6eea9b5ece9)
++++ b/secrets.properties	(date 1743952117085)
+@@ -1,1 +1,1 @@
+-GOOGLE_CLIENT_ID="839756644672-gja8ni4skviq8nnoavbtql2091blmtl3.apps.googleusercontent.com"
+\ No newline at end of file
++GOOGLE_CLIENT_ID="839756644672-gja8ni4skviq8nnoavbtql2091blmtl3.apps.googleusercontent.com"
+Index: app/src/main/res/drawable/iconttest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/drawable/iconttest.xml b/app/src/main/res/drawable/iconttest.xml
+new file mode 100644
+--- /dev/null	(date 1743952117072)
++++ b/app/src/main/res/drawable/iconttest.xml	(date 1743952117072)
+@@ -0,0 +1,11 @@
++<RelativeLayout
++    xmlns:android="http://schemas.android.com/apk/res/android"
++    android:id="@+id/vuesax_line"
++    android:layout_width="0dp"
++    android:layout_height="0dp"
++    android:layout_alignParentLeft="true"
++    android:layout_alignParentRight="true"
++    android:layout_alignParentTop="true"
++    android:layout_alignParentBottom="true"
++    />
++

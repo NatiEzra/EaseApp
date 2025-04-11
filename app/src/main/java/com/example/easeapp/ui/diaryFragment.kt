@@ -40,24 +40,12 @@ class DiaryFragment : Fragment() {
             findNavController().navigate(R.id.addDiaryFragment)
         }
 
-        val deleteButton = view.findViewById<ImageView>(R.id.deleteDiaryIcon)
-
-        deleteButton?.setOnClickListener {
-
-            AlertDialog.Builder(view.context)
+        diaryAdapter = DiaryAdapter { item ->
+            AlertDialog.Builder(requireContext())
                 .setTitle("Delete Post")
                 .setMessage("Are you sure you want to delete this post?")
                 .setPositiveButton("Yes") { dialog, _ ->
-                    //onDeleteClick(item.)
-                    viewModel.diaryDeleted.observe(viewLifecycleOwner) { result ->
-                        result
-                            .onSuccess {
-                                viewModel.loadUserDiaries(requireContext())
-                            }
-                            .onFailure {
-                                // Handle error
-                            }
-                    }
+                    context?.let { viewModel.deleteDiaryEntry(it,item._id?:"") } // צריך לממש את זה ב־ViewModel
                     dialog.dismiss()
                 }
                 .setNegativeButton("Cancel") { dialog, _ ->
@@ -66,23 +54,34 @@ class DiaryFragment : Fragment() {
                 .show()
         }
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.fragment_feed_recycler_view)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        diaryAdapter = DiaryAdapter()
-        recyclerView.adapter = diaryAdapter
+
         val shareYourThought = view.findViewById<TextView>(R.id.noPostsTextView)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.fragment_feed_recycler_view)
+
+
+        diaryAdapter = DiaryAdapter { diary ->
+            AlertDialog.Builder(requireContext())
+                .setTitle("Delete Post")
+                .setMessage("Are you sure you want to delete this post?")
+                .setPositiveButton("Yes") { dialog, _ ->
+                    viewModel.deleteDiaryEntry(requireContext(), diary._id?:"")
+                    dialog.dismiss()
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
+        }
+
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView.adapter = diaryAdapter
 
         viewModel.userDiaries.observe(viewLifecycleOwner) { diaries ->
-            if(!diaries.isEmpty()){
-                shareYourThought.visibility = View.GONE
-            }
-            else{
-                shareYourThought.visibility = View.VISIBLE
-            }
+            shareYourThought.visibility = if (diaries.isEmpty()) View.VISIBLE else View.GONE
             diaryAdapter.submitList(diaries)
         }
 
-        // טעינת היומנים
         viewModel.loadUserDiaries(requireContext())
+
     }
 }
