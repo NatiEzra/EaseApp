@@ -31,7 +31,7 @@
 
         <TextView
             android:id="@+id/dateTextDiary"
-            android:layout_width="64dp"
+            android:layout_width="200dp"
             android:layout_height="15dp"
             android:layout_marginTop="136dp"
             android:text="TextView"

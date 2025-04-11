@@ -83,11 +83,11 @@
     </fragment>
     <fragment
         android:id="@+id/diaryFragment"
-        android:name="com.example.easeapp.ui.diaryFragment"
+        android:name="com.example.easeapp.ui.DiaryFragment"
         android:label="diaryFragment" />
     <fragment
         android:id="@+id/addDiaryFragment"
-        android:name="com.example.easeapp.ui.activities.addDiaryFragment"
+        android:name="com.example.easeapp.ui.activities.AddDiaryFragment"
         android:label="addDiaryFragment" />
 
 

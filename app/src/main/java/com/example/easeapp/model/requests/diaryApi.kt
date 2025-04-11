@@ -10,6 +10,7 @@ import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -23,10 +24,16 @@ import retrofit2.http.Query
 
 interface DiaryApi {
     @POST("/api/diary")
-    fun addDiary(
+    suspend fun addDiary(
         @Body request: DiaryModel,
         @Header("Authorization") token: String
-    ): Call<DiaryResponse>
+    ): Response<DiaryResponse>
+
+    @GET("/api/diary")
+    suspend fun getUserDiaries(
+        @Header("Authorization") token: String,
+        @Query("patientId") userId: String
+    ): Response<List<DiaryModel>>
 }
 object RetrofitClientDiary  {
     private const val BASE_URL = "http://10.0.2.2:3000"

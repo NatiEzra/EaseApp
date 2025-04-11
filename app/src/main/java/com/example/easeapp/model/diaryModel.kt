@@ -2,6 +2,8 @@ package com.example.easeapp.model
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import com.example.ease.model.local.AppDatabase
 import com.example.easeapp.model.requests.DiaryApi
 import com.example.easeapp.model.requests.RetrofitClientDiary
@@ -11,6 +13,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Date
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.ease.R
+import com.example.ease.ui.activities.MainActivity
+import kotlinx.coroutines.withContext
 
 // נתוני המודל
 data class DiaryModel(
@@ -20,56 +26,67 @@ data class DiaryModel(
 )
 
 data class DiaryResponse(
-    val text: String,
+    val message: String
+
 )
 
 
-class DiaryRepo(private val context: Context) {
-
-    private val diaryApi: DiaryApi by lazy {
+class DiaryRepo(
+private val context: Context
+) {
+    private val api: DiaryApi by lazy {
         RetrofitClientDiary.create(context).create(DiaryApi::class.java)
     }
 
-    fun addDiary(diaryText: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val currentUser = AppDatabase.getInstance(context).userDao().getCurrentUser()
+    private val db: AppDatabase by lazy {
+        AppDatabase.getInstance(context)
+    }
 
-                if (currentUser == null) {
-                    Log.e("DiaryRepo", "No current user found")
-                    return@launch
-                }
+    suspend fun addDiary(diaryText: String): String = withContext(Dispatchers.IO) {
+        try {
+            val currentUser = db.userDao().getCurrentUser()
+            if (currentUser == null) return@withContext "User not found"
 
-                val token = "Bearer " + currentUser.accessToken?.trim()
-                val request = DiaryModel(
-                    context = diaryText,
-                    date = Date(),
-                    authorId = currentUser._id ?: ""
-                )
+            val token = "Bearer ${currentUser.accessToken?.trim()}"
+            val request = DiaryModel(
+                context = diaryText,
+                date = Date(),
+                authorId = currentUser._id ?: ""
+            )
 
-                diaryApi.addDiary(request, token)
-                    .enqueue(object : retrofit2.Callback<DiaryResponse> {
-                        override fun onResponse(
-                            call: retrofit2.Call<DiaryResponse>,
-                            response: retrofit2.Response<DiaryResponse>
-                        ) {
-                            if (response.isSuccessful) {
-                                Log.d("DiaryRepo", "Diary added: ${response.body()?.text}")
-                            } else {
-                                Log.e("DiaryRepo", "Failed: ${response.errorBody()?.string()}")
-                            }
-                        }
+            val response = api.addDiary(request, token)
 
-                        override fun onFailure(call: retrofit2.Call<DiaryResponse>, t: Throwable) {
-                            Log.e("DiaryRepo", "Request failed", t)
-                        }
-                    })
-
-            } catch (e: Exception) {
-                Log.e("DiaryRepo", "Error preparing request", e)
+            return@withContext if (response.isSuccessful) {
+                response.body()?.message ?: "Success"
+            } else {
+                val error = response.errorBody()?.string()
+                "Error: ${error ?: "Unknown error"}"
             }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext "Error: ${e.message}"
         }
     }
+    suspend fun getUserDiaries(): List<DiaryModel> = withContext(Dispatchers.IO) {
+        try {
+            val currentUser = db.userDao().getCurrentUser()
+            if (currentUser == null) return@withContext emptyList()
+
+            val token = "Bearer ${currentUser.accessToken?.trim()}"
+            val response = api.getUserDiaries(token, currentUser._id ?: "")
+
+            if (response.isSuccessful) {
+                return@withContext response.body() ?: emptyList()
+            } else {
+                return@withContext emptyList()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext emptyList()
+        }
+    }
+
 }
 
 
