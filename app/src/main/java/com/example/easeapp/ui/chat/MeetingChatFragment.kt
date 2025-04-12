@@ -34,15 +34,21 @@ class MeetingChatFragment : Fragment() {
         connectSocket()
 
         sendIcon.setOnClickListener {
-            val messageText = messageInput.text.toString().trim()
-            if (messageText.isNotEmpty()) {
-                sendMessage(messageText)
-                messageInput.text.clear()
+            sendCurrentMessage()
+        }
+
+        // 🔥 שליחה על אנטר
+        messageInput.setOnEditorActionListener { _, _, event ->
+            if (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
+                sendCurrentMessage()
+                true
+            } else {
+                false
             }
         }
+
         val doctorId = getDoctorIdFromPrefs()
         Log.d("SOCKET", "📤 Sending message to doctorId: $doctorId")
-
     }
 
     private fun connectSocket() {
@@ -66,9 +72,16 @@ class MeetingChatFragment : Fragment() {
 
         socket.on("newMessage") { args ->
             val data = args[0] as JSONObject
-            val msg = data.getString("message")
-            activity?.runOnUiThread {
-                addMessageToUI(msg, fromMe = false)
+            val senderId = data.getString("from")
+            val currentUserId = getUserIdFromPrefs()
+
+            if (senderId != currentUserId) {
+                val msg = data.getString("message")
+                activity?.runOnUiThread {
+                    addMessageToUI(msg, fromMe = false)
+                }
+            } else {
+                Log.d("SOCKET", "📥 Ignored own message from server")
             }
         }
 
@@ -77,6 +90,14 @@ class MeetingChatFragment : Fragment() {
         }
 
         socket.connect()
+    }
+
+    private fun sendCurrentMessage() {
+        val messageText = messageInput.text.toString().trim()
+        if (messageText.isNotEmpty()) {
+            sendMessage(messageText)
+            messageInput.text.clear()
+        }
     }
 
     private fun sendMessage(messageText: String) {

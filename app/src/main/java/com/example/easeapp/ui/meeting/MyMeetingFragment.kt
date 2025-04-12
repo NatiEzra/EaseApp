@@ -67,8 +67,27 @@ class MyMeetingFragment : Fragment() {
             Picasso.get().load("https://example.com/sample.jpg").into(doctorImage)
 
             btnChange.setOnClickListener {
-                findNavController().navigate(R.id.scheduleRoutineMeeting)
+                val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+                val appointmentId = prefs.getString("appointmentId", null)
+
+                if (appointmentId != null) {
+                    appointmentViewModel.cancelAppointment(requireContext(), appointmentId)
+
+                    appointmentViewModel.cancelAppointmentStatus.observe(viewLifecycleOwner) { result ->
+                        result.onSuccess {
+                            prefs.edit().clear().apply()
+
+                            val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
+                            findNavController().navigate(action)
+                        }
+
+                        result.onFailure {
+                            Toast.makeText(requireContext(), "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
             }
+
 
             btnCancel.setOnClickListener {
                 val dialogView = layoutInflater.inflate(R.layout.dialog_emergency_confirm, null)
@@ -113,12 +132,11 @@ class MyMeetingFragment : Fragment() {
         } else {
             meetingLayout.visibility = View.GONE
             emptyLayout.visibility = View.VISIBLE
+        }
+        btnScheduleNew.setOnClickListener {
+            val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
+            findNavController().navigate(action)
 
-            btnScheduleNew.setOnClickListener {
-                val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
-                findNavController().navigate(action)
-
-            }
         }
 
         appointmentViewModel.cancelAppointmentStatus.observe(viewLifecycleOwner) { result ->
