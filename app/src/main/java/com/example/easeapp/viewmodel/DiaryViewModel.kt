@@ -24,14 +24,9 @@ class DiaryViewModel : ViewModel() {
     private val _diaryDeleted = MutableLiveData<Result<Boolean>>()
     val diaryDeleted: LiveData<Result<Boolean>> get() = _diaryDeleted
 
-//    fun deletePost(postId: String) {
-//        viewModelScope.launch(Dispatchers.IO) {
-//            postModel.deletePost(postId) { success, error ->
-//                if (success) _postOperationState.postValue(Result.success(Unit))
-//                else _postOperationState.postValue(Result.failure(Throwable(error)))
-//            }
-//        }
-//    }
+    private val _diaryUpdated = MutableLiveData<Result<Boolean>>()
+    val diaryUpdated: LiveData<Result<Boolean>> get() = _diaryUpdated
+
 
     fun deleteDiaryEntry(context: Context, diaryId: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -46,6 +41,17 @@ class DiaryViewModel : ViewModel() {
                 }
             } else {
                 _diaryDeleted.postValue(Result.failure(Throwable(result.toString())))
+            }
+        }
+    }
+
+    fun updateDiaryEntry(context: Context, id: String, newText: String) {
+        viewModelScope.launch {
+            val result = DiaryRepo(context).updateDiary(id, newText)
+            if (result == "Diary entry updated successfully") {
+                _diarySaved.postValue(Result.success(true))
+            } else {
+                _diarySaved.postValue(Result.failure(Throwable("Update failed")))
             }
         }
     }

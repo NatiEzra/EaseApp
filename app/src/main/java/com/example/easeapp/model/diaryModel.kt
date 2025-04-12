@@ -88,6 +88,33 @@ private val context: Context
             return@withContext emptyList()
         }
     }
+    suspend fun updateDiary(diaryId: String, diaryText: String): String = withContext(Dispatchers.IO) {
+        try {
+            val currentUser = db.userDao().getCurrentUser()
+            if (currentUser == null) return@withContext "User not found"
+
+            val token = "Bearer ${currentUser.accessToken?.trim()}"
+            val request = DiaryModel(
+                _id = diaryId,
+                context = diaryText,
+                date = Date(),
+                authorId = currentUser._id ?: ""
+            )
+
+            val response = api.updateDiary(token,request._id ?: "", request)
+
+            return@withContext if (response.isSuccessful) {
+                response.body()?.message ?: "Success"
+            } else {
+                val error = response.errorBody()?.string()
+                "Error: ${error ?: "Unknown error"}"
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext "Error: ${e.message}"
+        }
+    }
 
    suspend fun deleteDiary(diaryId: String): String = withContext(Dispatchers.IO){
        val currentUser = db.userDao().getCurrentUser()

@@ -27,19 +27,30 @@ class AddDiaryFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        val diaryId = arguments?.getString("diaryId")
+        val diaryText = arguments?.getString("diaryText")
         val diaryEditText = view.findViewById<EditText>(R.id.diaryEditText)
         val postButton = view.findViewById<Button>(R.id.postButtonDiary)
         val progressBar = view.findViewById<ProgressBar>(R.id.addDiaryProgressBar)
         val cancelButton= view.findViewById<Button>(R.id.cancelButton)
         postButton.setOnClickListener {
             val text = diaryEditText.text.toString()
-            progressBar.visibility = View.VISIBLE
-            viewModel.addDiaryEntry(requireContext(), text)
+
+            if (text.isNotBlank()) {
+                if (diaryId != null) {
+                    viewModel.updateDiaryEntry(requireContext(), diaryId, text)
+                } else {
+                    viewModel.addDiaryEntry(requireContext(), text)
+                }
+            } else {
+                Toast.makeText(requireContext(), "Diary text is empty", Toast.LENGTH_SHORT).show()
+            }
         }
         cancelButton.setOnClickListener {
             findNavController().navigate(R.id.diaryFragment)
         }
+        diaryEditText.setText(diaryText?:"")
+        postButton.text=if(diaryId.isNullOrEmpty()) "Post" else "Save"
         viewModel.diarySaved.observe(viewLifecycleOwner) { result ->
             progressBar.visibility = View.GONE
             result

@@ -42,9 +42,17 @@ interface DiaryApi {
         @Header("Authorization") token: String,
         @Path("id") id: String
     ): Response<DiaryResponse>
+    @PUT("/api/diary/{id}")
+    suspend fun updateDiary(
+        @Header("Authorization") token: String,
+        @Path("id") id: String,
+        @Body request: DiaryModel
+    ): Response<DiaryResponse>
 }
 object RetrofitClientDiary  {
+//    private const val BASE_URL = "http://10.100.102.175:3000"
     private const val BASE_URL = "http://10.0.2.2:3000"
+
 
     fun create(context: Context): Retrofit {
         val client = OkHttpClient.Builder()

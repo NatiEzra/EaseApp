@@ -14,7 +14,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class DiaryAdapter(
-    private val onDeleteClick: (DiaryModel) -> Unit
+    private val onDeleteClick: (DiaryModel) -> Unit,
+    private val onEditClick: (DiaryModel) -> Unit
 ) : ListAdapter<DiaryModel, DiaryAdapter.DiaryViewHolder>(DIFF_CALLBACK) {
 
     inner class DiaryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -22,12 +23,16 @@ class DiaryAdapter(
         private val diaryDate: TextView = itemView.findViewById(R.id.dateTextDiary)
         val dateFormat = SimpleDateFormat("EEEE, yyyy-MM-dd HH:mm", Locale.getDefault())
         private val deleteBtn: ImageView = itemView.findViewById(R.id.deleteDiaryIcon)
+        private val editBtn: ImageView = itemView.findViewById(R.id.editDiaryIcon)
 
         fun bind(item: DiaryModel) {
             diaryText.text = item.context
             diaryDate.text = dateFormat.format(item.date)
             deleteBtn.setOnClickListener {
                 onDeleteClick(item)
+            }
+            editBtn.setOnClickListener {
+                onEditClick(item)
             }
         }
     }

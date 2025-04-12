@@ -40,38 +40,50 @@ class DiaryFragment : Fragment() {
             findNavController().navigate(R.id.addDiaryFragment)
         }
 
-        diaryAdapter = DiaryAdapter { item ->
-            AlertDialog.Builder(requireContext())
-                .setTitle("Delete Post")
-                .setMessage("Are you sure you want to delete this post?")
-                .setPositiveButton("Yes") { dialog, _ ->
-                    context?.let { viewModel.deleteDiaryEntry(it,item._id?:"") } // צריך לממש את זה ב־ViewModel
-                    dialog.dismiss()
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
-        }
+//        diaryAdapter = DiaryAdapter { item ->
+//            AlertDialog.Builder(requireContext())
+//                .setTitle("Delete Post")
+//                .setMessage("Are you sure you want to delete this post?")
+//                .setPositiveButton("Yes") { dialog, _ ->
+//                    context?.let { viewModel.deleteDiaryEntry(it,item._id?:"") } // צריך לממש את זה ב־ViewModel
+//                    dialog.dismiss()
+//                }
+//                .setNegativeButton("Cancel") { dialog, _ ->
+//                    dialog.dismiss()
+//                }
+//                .show()
+//        }
 
 
         val shareYourThought = view.findViewById<TextView>(R.id.noPostsTextView)
         val recyclerView = view.findViewById<RecyclerView>(R.id.fragment_feed_recycler_view)
 
 
-        diaryAdapter = DiaryAdapter { diary ->
-            AlertDialog.Builder(requireContext())
-                .setTitle("Delete Post")
-                .setMessage("Are you sure you want to delete this post?")
-                .setPositiveButton("Yes") { dialog, _ ->
-                    viewModel.deleteDiaryEntry(requireContext(), diary._id?:"")
-                    dialog.dismiss()
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
-        }
+        diaryAdapter = DiaryAdapter(
+            onDeleteClick = { item ->
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Post")
+                    .setMessage("Are you sure you want to delete this post?")
+                    .setPositiveButton("Yes") { dialog, _ ->
+                        context?.let { viewModel.deleteDiaryEntry(it, item._id ?: "") }
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            },
+            onEditClick = { item ->
+                // Handle edit action here, for example, navigate to an edit screen
+                findNavController().navigate(
+                    R.id.addDiaryFragment,
+                    Bundle().apply {
+                        putString("diaryId", item._id)
+                        putString("diaryText", item.context)
+                    }
+                )
+            }
+        )
 
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = diaryAdapter

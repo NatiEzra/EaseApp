@@ -1,63 +1,68 @@
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_margin="12dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="4dp"
-    android:clipToPadding="false"
-    android:layoutDirection="ltr"
-    android:backgroundTint="#F5F5F5"> <!-- קובע שהעיצוב תמיד יהיה שמאל לימין -->
+    android:backgroundTint="#F0F4F8">
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:clipToOutline="true"
-        android:layoutDirection="ltr"
-        android:minHeight="154dp">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-
+        <!-- טקסט היומן -->
         <TextView
             android:id="@+id/textDiary"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="TextView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:text="Diary Text"
+            android:textSize="16sp"
+            android:textColor="#222222"
+            android:lineSpacingExtra="6dp"
+            android:fontFamily="sans-serif"
+            android:textAlignment="viewStart"
+            android:breakStrategy="simple"
+            android:hyphenationFrequency="none"
+            android:paddingBottom="8dp"/>
 
+        <!-- תאריך -->
         <TextView
             android:id="@+id/dateTextDiary"
-            android:layout_width="200dp"
-            android:layout_height="15dp"
-            android:layout_marginTop="136dp"
-            android:text="TextView"
-            app:layout_constraintEnd_toStartOf="@+id/deleteDiaryIcon"
-            app:layout_constraintStart_toEndOf="@+id/editDiaryIcon"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/editDiaryIcon"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/penciledit" />
+            android:text="12.04.2025, שבת, 15:01"
+            android:textSize="12sp"
+            android:textColor="#888888"
+            android:gravity="end"
+            android:fontFamily="sans-serif-light"/>
 
-        <ImageView
-            android:id="@+id/deleteDiaryIcon"
-            android:layout_width="wrap_content"
+        <!-- כפתורים -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:srcCompat="@drawable/trash_can" />
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginTop="8dp"
+            android:paddingBottom="4dp">
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageView
+                android:id="@+id/editDiaryIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/penciledit"
+                android:contentDescription="Edit" />
+
+            <ImageView
+                android:id="@+id/deleteDiaryIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/trash_can"
+                android:contentDescription="Delete" />
+        </LinearLayout>
+
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -14,33 +14,36 @@
         android:orientation="vertical">
 
         <!-- Header: DIARY + Add Button -->
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp">
 
             <TextView
                 android:id="@+id/headerText"
-                android:layout_width="86dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="159dp"
-                android:layout_marginEnd="150dp"
                 android:text="Diary"
                 android:textColor="@android:color/black"
                 android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
 
             <ImageButton
                 android:id="@+id/addDiary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
                 android:background="@android:color/transparent"
+                android:contentDescription="Add Diary Entry"
                 app:srcCompat="@drawable/add"
-                android:contentDescription="Add Diary Entry" />
-        </RelativeLayout>
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- "No posts found" text -->
         <TextView
