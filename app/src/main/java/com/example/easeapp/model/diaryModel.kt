@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 // נתוני המודל
 data class DiaryModel(
     val _id: String? = null,
-    val context: String,
+    var context: String,
     val date: Date,
     val authorId: String,
 )

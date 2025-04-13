@@ -62,8 +62,8 @@ class DiaryFragment : Fragment() {
         diaryAdapter = DiaryAdapter(
             onDeleteClick = { item ->
                 AlertDialog.Builder(requireContext())
-                    .setTitle("Delete Post")
-                    .setMessage("Are you sure you want to delete this post?")
+                    .setTitle("Delete Diary")
+                    .setMessage("Are you sure you want to delete this diary?")
                     .setPositiveButton("Yes") { dialog, _ ->
                         context?.let { viewModel.deleteDiaryEntry(it, item._id ?: "") }
                         dialog.dismiss()
@@ -89,6 +89,8 @@ class DiaryFragment : Fragment() {
         recyclerView.adapter = diaryAdapter
 
         viewModel.userDiaries.observe(viewLifecycleOwner) { diaries ->
+            //limit the context to 10 words and then see ...
+
             shareYourThought.visibility = if (diaries.isEmpty()) View.VISIBLE else View.GONE
             diaryAdapter.submitList(diaries)
         }
