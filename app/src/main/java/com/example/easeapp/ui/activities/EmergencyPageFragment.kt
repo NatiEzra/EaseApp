@@ -1,4 +1,4 @@
-package com.example.ease.ui.emergency
+package com.example.easeapp.ui.emergency
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
+import com.example.ease.ui.emergency.EmergencyInfoDialogFragment
 
 class EmergencyPageFragment : Fragment() {
     override fun onCreateView(
@@ -72,11 +73,6 @@ class EmergencyPageFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val backButton = view.findViewById<ImageView>(R.id.backIcon)
-        backButton.setOnClickListener {
-            findNavController().navigate(R.id.homePageFragment)
-        }
     }
 
 }

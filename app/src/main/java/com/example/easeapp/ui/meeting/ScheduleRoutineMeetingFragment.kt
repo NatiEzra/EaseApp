@@ -1,5 +1,6 @@
-package com.example.easeapp.ui.meetings
+package com.example.easeapp.ui.meeting
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -20,16 +21,19 @@ import com.example.ease.R
 import com.example.ease.model.User
 import com.example.ease.model.UserRepository
 import com.example.ease.viewmodel.UserViewModel
+import com.example.easeapp.repositories.AppointmentRepository
+import com.example.easeapp.viewmodel.AppointmentViewModel
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
 
 class DoctorsViewHolder(
     itemView: View,
-    private val onBookClick: (User) -> Unit
+    private val onBookClick: (User) -> Unit,
+    private val getClosestAppointment: (Context, String) -> Unit
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val doctorNameTextView: TextView = itemView.findViewById(R.id.doctorName)
-    private val experienceTextView: TextView = itemView.findViewById(R.id.doctorExperience)
+    private val closestSlotTextView: TextView = itemView.findViewById(R.id.doctorExperience)
     private val doctorImageView: ImageView = itemView.findViewById(R.id.doctorImage)
     private val bookButton: Button = itemView.findViewById(R.id.bookNowBtn)
 
@@ -37,9 +41,22 @@ class DoctorsViewHolder(
         return oldUrl.replace("http://localhost:", "http://10.0.2.2:")
     }
 
+
     fun bind(doctor: User) {
+        closestSlotTextView.text = "Loading..."
+        val appointment= AppointmentRepository.shared
+        appointment.getClosestAppointment(itemView.context, doctor._id) { success, date, error ->
+            if (success && date != null) {
+                closestSlotTextView.text = "Closest appointment: " + date
+            } else {
+                closestSlotTextView.text = error ?: "An error occurred"
+            }
+        }
+
         doctorNameTextView.text = doctor.username
-        experienceTextView.text = "15 Years experience"
+
+        getClosestAppointment(itemView.context, doctor._id)
+
         val profilePicture = fixImageUrl(doctor.profilePicture)
         Picasso.get()
             .load(profilePicture)
@@ -54,14 +71,15 @@ class DoctorsViewHolder(
 
 class DoctorRecycleAdapter(
     private var originalList: List<User>,
-    private val onBookClick: (User) -> Unit
+    private val onBookClick: (User) -> Unit,
+    private val getClosestAppointment: (Context, String) -> Unit
 ) : RecyclerView.Adapter<DoctorsViewHolder>() {
 
     private var doctors: MutableList<User> = originalList.toMutableList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DoctorsViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.doctor_item, parent, false)
-        return DoctorsViewHolder(view, onBookClick)
+        return DoctorsViewHolder(view, onBookClick, getClosestAppointment)
     }
 
     override fun getItemCount(): Int = doctors.size
@@ -100,6 +118,8 @@ class ScheduleRoutineMeeting : Fragment() {
     private lateinit var progressBar: ProgressBar
     private lateinit var recyclerView: RecyclerView
     val userViewModel: UserViewModel by viewModels()
+    val appointmentViewModel: AppointmentViewModel by viewModels()
+
 
     private lateinit var adapter: DoctorRecycleAdapter
 
@@ -121,10 +141,21 @@ class ScheduleRoutineMeeting : Fragment() {
         recyclerView = view.findViewById(R.id.doctorRecyclerView)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = LinearLayoutManager(context)
-        adapter = DoctorRecycleAdapter(doctors) { selectedDoctor ->
-            val action = ScheduleRoutineMeetingDirections.actionScheduleRoutineMeetingToBookingAppointmentFragment(selectedDoctor._id)
-            findNavController().navigate(action)
-        }
+        adapter = DoctorRecycleAdapter(
+            doctors,
+            onBookClick = { selectedDoctor ->
+                val action = ScheduleRoutineMeetingDirections
+                    .actionScheduleRoutineMeetingToBookingAppointmentFragment(
+                        doctorId = selectedDoctor._id,
+                        doctorName = selectedDoctor.username
+                    )
+                findNavController().navigate(action)
+
+            },
+            getClosestAppointment = { context, doctorId ->
+                appointmentViewModel.getClosestAppointment(context, doctorId)
+            }
+        )
         recyclerView.adapter = adapter
 
         userViewModel.allDoctors.observe(viewLifecycleOwner) { fetchedUsers ->

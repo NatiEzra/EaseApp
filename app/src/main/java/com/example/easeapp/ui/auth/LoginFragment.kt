@@ -1,5 +1,6 @@
 package com.example.ease.ui.auth
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -101,6 +102,9 @@ class loginFragment : Fragment() {
                 val dob = user.dateOfBirth
                 val gender = user.gender
 
+                val prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                prefs.edit().putString("userId", _id).apply()
+
                 lifecycleScope.launch {
                     val userDao = AppDatabase.getInstance(requireContext()).userDao()
                     userDao.clear()
@@ -117,9 +121,11 @@ class loginFragment : Fragment() {
                         )
                     )
                 }
+
                 Log.d("LOGIN", "User logged in: ${user.username}, phone: $phone, dob: $dob, gender: $gender")
             }
         }
+
         setupListeners()
     }
 

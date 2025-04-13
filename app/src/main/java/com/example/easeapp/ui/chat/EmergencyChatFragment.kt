@@ -1,4 +1,4 @@
-package com.example.ease.ui.chat
+package com.example.easeapp.ui.chat
 
 import android.os.Bundle
 import android.view.Gravity
@@ -10,7 +10,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.example.ease.R
 
 class EmergencyChatFragment : Fragment() {
@@ -26,7 +26,7 @@ class EmergencyChatFragment : Fragment() {
 
         val sendIcon = view.findViewById<ImageView>(R.id.sendIcon)
         val messageInput = view.findViewById<EditText>(R.id.messageInput)
-        val messageContainer = view.findViewById<LinearLayout>(R.id.messageContainer)
+        val messageContainer = view.findViewById<RecyclerView>(R.id.chatRecyclerView)
 
         sendIcon.setOnClickListener {
             val messageText = messageInput.text.toString().trim()

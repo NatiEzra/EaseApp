@@ -58,6 +58,8 @@ class DateAdapter : RecyclerView.Adapter<DateAdapter.DateViewHolder>() {
             dayLetter.text = item.day
             dayNumber.text = item.dayNum
             itemView.alpha = if (isSelected) 1f else 0.5f
+            itemView.isSelected = isSelected
         }
+
     }
 }
