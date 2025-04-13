@@ -8,17 +8,54 @@ import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.ease.R
 import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONObject
+data class ChatMessage(val text: String, val fromMe: Boolean)
+
+class ChatMessageAdapter(private val messages: MutableList<ChatMessage>) :
+    RecyclerView.Adapter<ChatMessageAdapter.ChatMessageViewHolder>() {
+
+    inner class ChatMessageViewHolder(val messageTextView: TextView) : RecyclerView.ViewHolder(messageTextView)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatMessageViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_chat_message, parent, false) as TextView
+        return ChatMessageViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ChatMessageViewHolder, position: Int) {
+        val message = messages[position]
+        holder.messageTextView.text = message.text
+        if (message.fromMe) {
+            holder.messageTextView.setTextColor(Color.WHITE)
+            holder.messageTextView.setBackgroundResource(R.drawable.bg_chat_bubble_user)
+        } else {
+            holder.messageTextView.setTextColor(Color.BLACK)
+            holder.messageTextView.setBackgroundResource(R.drawable.bg_chat_bubble)
+        }
+    }
+
+    override fun getItemCount(): Int = messages.size
+
+    fun addMessage(message: ChatMessage) {
+        messages.add(message)
+        notifyItemInserted(messages.size - 1)
+    }
+}
+
 
 class MeetingChatFragment : Fragment() {
 
     private lateinit var messageInput: EditText
     private lateinit var sendIcon: ImageView
-    private lateinit var messageContainer: LinearLayout
+    private lateinit var messageContainer: RecyclerView
     private lateinit var socket: Socket
+    private val messages = mutableListOf<ChatMessage>()
+    private lateinit var adapter: ChatMessageAdapter
 
     private val args: MeetingChatFragmentArgs by navArgs()
 
@@ -29,7 +66,10 @@ class MeetingChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         messageInput = view.findViewById(R.id.messageInput)
         sendIcon = view.findViewById(R.id.sendIcon)
-        messageContainer = view.findViewById(R.id.messageContainer)
+        messageContainer = view.findViewById(R.id.chatRecyclerView)
+        messageContainer.layoutManager = LinearLayoutManager(requireContext())
+        adapter = ChatMessageAdapter(messages)
+        messageContainer.adapter = adapter
 
         connectSocket()
 
@@ -57,7 +97,7 @@ class MeetingChatFragment : Fragment() {
             reconnection = true
         }
 
-        socket = IO.socket("http://192.168.1.105:3000", opts)
+        socket = IO.socket("http://10.0.2.2:2999", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
             Log.d("SOCKET", "Connected ✅")
@@ -114,29 +154,11 @@ class MeetingChatFragment : Fragment() {
     }
 
     private fun addMessageToUI(text: String, fromMe: Boolean) {
-        val messageView = TextView(requireContext()).apply {
-            this.text = text
-            setTextColor(if (fromMe) Color.WHITE else Color.BLACK)
-            setBackgroundResource(if (fromMe) R.drawable.bg_chat_bubble_user else R.drawable.bg_chat_bubble)
-            setPadding(20, 12, 20, 12)
-            textSize = 16f
-
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = 16
-                if (fromMe) {
-                    gravity = Gravity.END
-                    marginEnd = 16
-                } else {
-                    gravity = Gravity.START
-                    marginStart = 16
-                }
-            }
-        }
-        messageContainer.addView(messageView)
+        val newMessage = ChatMessage(text, fromMe)
+        adapter.addMessage(newMessage)
+        messageContainer.scrollToPosition(messages.size - 1)
     }
+
 
     private fun getUserIdFromPrefs(): String {
         val prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
