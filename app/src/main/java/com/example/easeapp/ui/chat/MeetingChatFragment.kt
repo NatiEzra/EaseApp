@@ -82,7 +82,7 @@ class MeetingChatFragment : Fragment() {
             reconnection = true
         }
 
-        socket = IO.socket("http://192.168.1.105:3000", opts)
+        socket = IO.socket("http://10.0.2.2:3000", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
             val joinData = JSONObject().apply {
