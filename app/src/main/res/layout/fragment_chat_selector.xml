@@ -6,9 +6,7 @@
     android:layout_height="match_parent"
     android:background="#FFFFFF">
 
-    <!-- רקע כחול – מתחת ללוגו -->
 
-    <!-- כפתור חזור -->
 
     <ImageView
         android:id="@+id/bgShape"
@@ -19,17 +17,6 @@
         android:src="@drawable/blue_shape_template"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageView
-        android:id="@+id/backIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_back_arrow"
-    android:contentDescription="Back"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    android:layout_marginTop="16dp"
-    android:layout_marginStart="16dp" />
 
     <!-- כותרת Chat -->
     <TextView

@@ -36,7 +36,7 @@ class ChatSelectorFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val btnRoutine = view.findViewById<Button>(R.id.btnRoutine)
         val btnEmergency = view.findViewById<Button>(R.id.btnEmergency)
-        val backIcon = view.findViewById<ImageView>(R.id.backIcon)
+
 
         btnRoutine.setOnClickListener {
             findNavController().navigate(R.id.chatRoutineFragment)
@@ -48,10 +48,6 @@ class ChatSelectorFragment : Fragment() {
             dialog.show(childFragmentManager, "emergencyDialog")
         }
 
-
-        backIcon.setOnClickListener {
-            findNavController().navigate(R.id.homePageFragment)
-        }
     }
 
 }

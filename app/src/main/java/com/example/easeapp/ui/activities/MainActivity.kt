@@ -3,6 +3,7 @@ package com.example.ease.ui.activities
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment)?.findNavController()
                 ?: throw IllegalStateException("NavController not found")
 
+        // Drawer
         drawerLayout = findViewById(R.id.drawer_layout)
         navView = findViewById(R.id.nav_view)
         toggle =
@@ -61,13 +63,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             drawerLayout.openDrawer(GravityCompat.END)
         }
 
+        val backButton: ImageView = findViewById(R.id.back_icon)
+        backButton.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
+
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.homePageFragment,
+                R.id.loginFragment,
+                R.id.registerFragment -> backButton.visibility = View.GONE
+                else -> backButton.visibility = View.VISIBLE
+            }
+        }
+
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navView.setNavigationItemSelectedListener(this)
+
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (navController.currentDestination?.id != R.id.homePageFragment) {
-                    navController.navigate(R.id.homePageFragment)
+                    navController.navigateUp()
                 } else {
                     finish()
                 }

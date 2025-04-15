@@ -88,6 +88,8 @@ dependencies {
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.cardview)
 
+    implementation("io.socket:socket.io-client:2.1.0")
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation("io.socket:socket.io-client:2.1.0")
