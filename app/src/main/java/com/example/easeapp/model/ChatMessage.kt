@@ -6,3 +6,9 @@ data class ChatMessage(
     val timestamp: Long,
     val profileImageUrl: String? = null
 )
+
+data class MeetingHistoryResponse(
+    val meetingId: String,
+    val history: String,
+    val aiMessages: List<String>
+)

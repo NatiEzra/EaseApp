@@ -61,7 +61,7 @@ class MeetingChatFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val apiService = Retrofit.Builder()
-                    .baseUrl("http://192.168.1.105:3000/")
+                    .baseUrl("http://10.0.2.2:2999/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(ChatApiService::class.java)
@@ -71,7 +71,8 @@ class MeetingChatFragment : Fragment() {
                 val historyMessages = repository.fetchChatHistory(
                     args.appointmentId,
                     getUserIdFromPrefs(),
-                    getDoctorImageUrl()
+                    getDoctorImageUrl(),
+                    requireContext()
                 )
                 Log.d("Chat", "Messages from server: $historyMessages")
 
@@ -116,7 +117,7 @@ class MeetingChatFragment : Fragment() {
             reconnection = true
         }
 
-        socket = IO.socket("http://192.168.1.105:3000", opts)
+        socket = IO.socket("http://10.0.2.2:2999", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
             val joinData = JSONObject().apply {
@@ -126,6 +127,17 @@ class MeetingChatFragment : Fragment() {
             }
             socket.emit("joinRoom", joinData)
         }
+
+        socket.on("consultationEnded") { args ->
+            val data = args[0] as JSONObject
+            val summary = data.optString("summary", "The consultation has ended.")
+
+            activity?.runOnUiThread {
+                handleSessionEnd(summary)
+            }
+        }
+
+
 
         socket.on("newMessage") { args ->
             val data = args[0] as JSONObject
@@ -155,6 +167,25 @@ class MeetingChatFragment : Fragment() {
             messageInput.text.clear()
         }
     }
+    private fun handleSessionEnd(summary: String) {
+        // Optionally disable inputs
+        messageInput.isEnabled = false
+        sendIcon.isEnabled = false
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Session Ended")
+            .setMessage(summary)
+            .setCancelable(false)
+            .setPositiveButton("OK") { _, _ ->
+                requireActivity().onBackPressedDispatcher.onBackPressed()
+
+            }
+            .create()
+        dialog.show()
+
+        socket.disconnect()
+    }
+
 
     private fun sendMessage(messageText: String) {
         val msgData = JSONObject().apply {
