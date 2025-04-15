@@ -1,5 +1,6 @@
 package com.example.easeapp.ui.chat
 
+import ChatApiService
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -11,15 +12,20 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ease.R
 import com.example.easeapp.model.ChatMessage
+import com.example.easeapp.repository.ChatRepository
 import com.squareup.picasso.Picasso
 import io.socket.client.IO
 import io.socket.client.Socket
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MeetingChatFragment : Fragment() {
@@ -51,6 +57,34 @@ class MeetingChatFragment : Fragment() {
         val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
         val doctorName = prefs.getString("doctorName", "Doctor")
         val doctorImageUrl = prefs.getString("doctorImageUrl", null)
+
+        lifecycleScope.launch {
+            try {
+                val apiService = Retrofit.Builder()
+                    .baseUrl("http://192.168.1.105:3000/")
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build()
+                    .create(ChatApiService::class.java)
+
+                val repository = ChatRepository(apiService)
+
+                val historyMessages = repository.fetchChatHistory(
+                    args.appointmentId,
+                    getUserIdFromPrefs(),
+                    getDoctorImageUrl()
+                )
+                Log.d("Chat", "Messages from server: $historyMessages")
+
+                messages.addAll(historyMessages)
+                adapter.notifyDataSetChanged()
+                messageContainer.scrollToPosition(messages.size - 1)
+            } catch (e: Exception) {
+                Log.e("Chat", "Error fetching history: ${e.message}")
+            }
+        }
+
+
+
 
         doctorNameTextView.text = doctorName
         if (!doctorImageUrl.isNullOrEmpty()) {
