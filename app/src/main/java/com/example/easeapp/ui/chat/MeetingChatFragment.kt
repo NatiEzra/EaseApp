@@ -1,51 +1,25 @@
 package com.example.easeapp.ui.chat
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.*
-import android.widget.*
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ease.R
+import com.example.easeapp.model.ChatMessage
+import com.squareup.picasso.Picasso
 import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONObject
-data class ChatMessage(val text: String, val fromMe: Boolean)
-
-class ChatMessageAdapter(private val messages: MutableList<ChatMessage>) :
-    RecyclerView.Adapter<ChatMessageAdapter.ChatMessageViewHolder>() {
-
-    inner class ChatMessageViewHolder(val messageTextView: TextView) : RecyclerView.ViewHolder(messageTextView)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatMessageViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_chat_message, parent, false) as TextView
-        return ChatMessageViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ChatMessageViewHolder, position: Int) {
-        val message = messages[position]
-        holder.messageTextView.text = message.text
-        if (message.fromMe) {
-            holder.messageTextView.setTextColor(Color.WHITE)
-            holder.messageTextView.setBackgroundResource(R.drawable.bg_chat_bubble_user)
-        } else {
-            holder.messageTextView.setTextColor(Color.BLACK)
-            holder.messageTextView.setBackgroundResource(R.drawable.bg_chat_bubble)
-        }
-    }
-
-    override fun getItemCount(): Int = messages.size
-
-    fun addMessage(message: ChatMessage) {
-        messages.add(message)
-        notifyItemInserted(messages.size - 1)
-    }
-}
 
 
 class MeetingChatFragment : Fragment() {
@@ -71,13 +45,27 @@ class MeetingChatFragment : Fragment() {
         adapter = ChatMessageAdapter(messages)
         messageContainer.adapter = adapter
 
+        val doctorNameTextView = view.findViewById<TextView>(R.id.doctorName)
+        val doctorImageView = view.findViewById<ImageView>(R.id.doctorImage)
+
+        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+        val doctorName = prefs.getString("doctorName", "Doctor")
+        val doctorImageUrl = prefs.getString("doctorImageUrl", null)
+
+        doctorNameTextView.text = doctorName
+        if (!doctorImageUrl.isNullOrEmpty()) {
+            Picasso.get()
+                .load(doctorImageUrl)
+                .placeholder(R.drawable.account)
+                .into(doctorImageView)
+        }
+
         connectSocket()
 
         sendIcon.setOnClickListener {
             sendCurrentMessage()
         }
 
-        // 🔥 שליחה על אנטר
         messageInput.setOnEditorActionListener { _, _, event ->
             if (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN) {
                 sendCurrentMessage()
@@ -86,9 +74,6 @@ class MeetingChatFragment : Fragment() {
                 false
             }
         }
-
-        val doctorId = getDoctorIdFromPrefs()
-        Log.d("SOCKET", "📤 Sending message to doctorId: $doctorId")
     }
 
     private fun connectSocket() {
@@ -97,11 +82,9 @@ class MeetingChatFragment : Fragment() {
             reconnection = true
         }
 
-        socket = IO.socket("http://10.0.2.2:2999", opts)
+        socket = IO.socket("http://192.168.1.105:3000", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
-            Log.d("SOCKET", "Connected ✅")
-
             val joinData = JSONObject().apply {
                 put("meetingId", args.appointmentId)
                 put("userId", getUserIdFromPrefs())
@@ -117,16 +100,15 @@ class MeetingChatFragment : Fragment() {
 
             if (senderId != currentUserId) {
                 val msg = data.getString("message")
-                activity?.runOnUiThread {
-                    addMessageToUI(msg, fromMe = false)
-                }
-            } else {
-                Log.d("SOCKET", "📥 Ignored own message from server")
-            }
-        }
+                val timestampString = data.getString("timestamp")
+                val formatter = java.time.format.DateTimeFormatter.ISO_INSTANT
+                val timestamp = java.time.Instant.from(formatter.parse(timestampString)).toEpochMilli()
 
-        socket.on(Socket.EVENT_DISCONNECT) {
-            Log.d("SOCKET", "Disconnected ❌")
+                activity?.runOnUiThread {
+                    addMessageToUI(msg, fromMe = false, timestamp = timestamp, profileImageUrl = getDoctorImageUrl())
+                }
+
+            }
         }
 
         socket.connect()
@@ -150,15 +132,14 @@ class MeetingChatFragment : Fragment() {
         }
 
         socket.emit("sendMessage", msgData)
-        addMessageToUI(messageText, fromMe = true)
+        addMessageToUI(messageText, fromMe = true, timestamp = System.currentTimeMillis(), profileImageUrl = null)
     }
 
-    private fun addMessageToUI(text: String, fromMe: Boolean) {
-        val newMessage = ChatMessage(text, fromMe)
+    private fun addMessageToUI(text: String, fromMe: Boolean, timestamp: Long, profileImageUrl: String? = null) {
+        val newMessage = ChatMessage(text, fromMe, timestamp, profileImageUrl)
         adapter.addMessage(newMessage)
-        messageContainer.scrollToPosition(messages.size - 1)
+        messageContainer.scrollToPosition(adapter.itemCount - 1)
     }
-
 
     private fun getUserIdFromPrefs(): String {
         val prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
@@ -168,6 +149,11 @@ class MeetingChatFragment : Fragment() {
     private fun getDoctorIdFromPrefs(): String {
         val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
         return prefs.getString("doctorId", "") ?: ""
+    }
+
+    private fun getDoctorImageUrl(): String? {
+        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("doctorImageUrl", null)
     }
 
     override fun onDestroyView() {
