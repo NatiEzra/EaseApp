@@ -1,12 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/text_view_message"
-    android:layout_width="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textSize="16sp"
-    android:padding="12dp"
-    android:layout_marginTop="16dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:background="@drawable/bg_chat_bubble"
-    android:textColor="@android:color/black"/>
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="start">
+
+    <ImageView
+        android:id="@+id/profileImage"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/account"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_rounded_gray"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/bubbleLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_chat_bubble"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/messageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#000"
+            android:textSize="16sp"
+            android:maxWidth="250dp" />
+
+        <TextView
+            android:id="@+id/messageTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="12:00"
+            android:textSize="12sp"
+            android:textColor="#888888"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+</LinearLayout>
