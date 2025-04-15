@@ -7,12 +7,18 @@
     <fragment
         android:id="@+id/homePageFragment"
         android:name="com.example.ease.ui.home.HomePageFragment"
-        android:label="Home Page" />
+        android:label="Home Page" >
+        <action
+            android:id="@+id/action_homePageFragment_to_diaryFragment"
+            app:destination="@id/diaryFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.ease.ui.auth.loginFragment"
         android:label="Login" />
+
+
 
     <fragment
         android:id="@+id/registerFragment"
@@ -122,6 +128,16 @@
             android:name="appointmentId"
             app:argType="string" />
     </fragment>
+
+    <fragment
+        android:id="@+id/diaryFragment"
+        android:name="com.example.easeapp.ui.DiaryFragment"
+        android:label="diaryFragment" />
+    <fragment
+        android:id="@+id/addDiaryFragment"
+        android:name="com.example.easeapp.ui.activities.AddDiaryFragment"
+        android:label="addDiaryFragment" />
+
     <action
         android:id="@+id/action_routineFragment_to_meetingChatFragment"
         app:destination="@id/meetingChatFragment" />
