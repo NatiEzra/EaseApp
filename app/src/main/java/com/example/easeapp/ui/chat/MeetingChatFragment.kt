@@ -1,5 +1,4 @@
 package com.example.easeapp.ui.chat
-
 import ChatApiService
 import android.content.Context
 import android.os.Bundle
@@ -61,7 +60,7 @@ class MeetingChatFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val apiService = Retrofit.Builder()
-                    .baseUrl("http://10.0.2.2:2999/")
+                    .baseUrl("http://192.168.1.105:3000/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(ChatApiService::class.java)
@@ -117,7 +116,7 @@ class MeetingChatFragment : Fragment() {
             reconnection = true
         }
 
-        socket = IO.socket("http://10.0.2.2:2999", opts)
+        socket = IO.socket("http://192.168.1.105:3000", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
             val joinData = JSONObject().apply {
@@ -168,9 +167,18 @@ class MeetingChatFragment : Fragment() {
         }
     }
     private fun handleSessionEnd(summary: String) {
-        // Optionally disable inputs
         messageInput.isEnabled = false
         sendIcon.isEnabled = false
+
+        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putBoolean("meetingEnded", true)
+            .remove("doctorName")
+            .remove("doctorImageUrl")
+            .remove("appointmentId")
+            .remove("date")
+            .remove("time")
+            .apply()
 
         val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Session Ended")
@@ -178,13 +186,13 @@ class MeetingChatFragment : Fragment() {
             .setCancelable(false)
             .setPositiveButton("OK") { _, _ ->
                 requireActivity().onBackPressedDispatcher.onBackPressed()
-
             }
             .create()
         dialog.show()
 
         socket.disconnect()
     }
+
 
 
     private fun sendMessage(messageText: String) {
