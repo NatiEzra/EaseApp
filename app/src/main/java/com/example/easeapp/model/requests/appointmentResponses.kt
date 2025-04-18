@@ -29,7 +29,7 @@ data class AppointmentDetails(
     val doctorId: String,
     val appointmentDate: String,
     val status: String,
-    val notes: String,
+    val notes: List<String>?,
     val isEmergency: Boolean,
     val createdAt: String,
     val updatedAt: String
