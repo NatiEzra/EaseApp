@@ -1,5 +1,6 @@
 package com.example.easeapp.ui.chat
 
+import ChatApiService
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
