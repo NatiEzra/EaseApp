@@ -39,7 +39,6 @@ class MyMeetingFragment : Fragment() {
 
         appointmentViewModel = ViewModelProvider(this)[AppointmentViewModel::class.java]
 
-
         doctorNameText = view.findViewById(R.id.doctorName)
         meetingDateText = view.findViewById(R.id.meetingDate)
         doctorImage = view.findViewById(R.id.doctorImage)
@@ -54,9 +53,10 @@ class MyMeetingFragment : Fragment() {
         val date = prefs.getString("date", null)
         val time = prefs.getString("time", null)
         val appointmentId = prefs.getString("appointmentId", null)
+        val meetingEnded = prefs.getBoolean("meetingEnded", false)
 
-        if (doctorName != null && date != null && time != null) {
-            // יש פגישה
+        if (doctorName != null && date != null && time != null && !meetingEnded) {
+            // יש פגישה שלא הסתיימה
             meetingLayout.visibility = View.VISIBLE
             emptyLayout.visibility = View.GONE
             btnChange.visibility = View.VISIBLE
@@ -87,7 +87,6 @@ class MyMeetingFragment : Fragment() {
                     }
                 }
             }
-
 
             btnCancel.setOnClickListener {
                 val dialogView = layoutInflater.inflate(R.layout.dialog_emergency_confirm, null)
@@ -133,10 +132,13 @@ class MyMeetingFragment : Fragment() {
             meetingLayout.visibility = View.GONE
             emptyLayout.visibility = View.VISIBLE
         }
+
         btnScheduleNew.setOnClickListener {
+            val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putBoolean("meetingEnded", false).apply() // איפוס כשקובעים חדשה
+
             val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
             findNavController().navigate(action)
-
         }
 
         appointmentViewModel.cancelAppointmentStatus.observe(viewLifecycleOwner) { result ->

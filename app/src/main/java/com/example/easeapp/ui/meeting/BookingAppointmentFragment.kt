@@ -1,4 +1,3 @@
-
 package com.example.easeapp.ui.meeting
 
 import android.content.Context
@@ -42,8 +41,6 @@ class BookingAppointmentFragment : Fragment() {
     private var selectedDate: String? = null
     private var selectedSlot: DisplayableSlot? = null
     private var appointmentId: String? = null
-
-
 
     private lateinit var dateRecyclerView: RecyclerView
     private lateinit var timeRecyclerView: RecyclerView
@@ -94,6 +91,18 @@ class BookingAppointmentFragment : Fragment() {
         appointmentViewModel.createAppointmentStatus.observe(viewLifecycleOwner) { result ->
             result.onSuccess { appointmentId ->
                 if (selectedDate != null && selectedSlot != null && doctorName != null) {
+
+                    // 🔸 שמירה ב-SharedPreferences
+                    val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
+                    prefs.edit()
+                        .putString("appointmentId", appointmentId.toString())
+                        .putString("doctorName", doctorName!!)
+                        .putString("doctorId", doctorId!!)
+                        .putString("date", selectedDate!!)
+                        .putString("time", selectedSlot!!.display)
+                        .putBoolean("meetingEnded", false)
+                        .apply()
+
                     val action = BookingAppointmentFragmentDirections
                         .actionBookingAppointmentFragmentToAppointmentConfirmationFragment(
                             appointmentId = appointmentId.toString(),
@@ -114,7 +123,6 @@ class BookingAppointmentFragment : Fragment() {
         continueButton.setOnClickListener {
             selectedDate = dateAdapter.getSelectedDate()
             selectedSlot = timeAdapter.getSelectedSlot()
-
 
             if (selectedDate != null && selectedSlot != null) {
                 lifecycleScope.launch {
