@@ -16,6 +16,7 @@ import com.example.ease.ui.activities.MainActivity
 import com.example.ease.R
 import com.example.ease.viewmodel.AuthViewModel
 import com.example.ease.model.local.AppDatabase
+import com.example.easeapp.model.SocketManager
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.coroutines.launch
@@ -86,6 +87,7 @@ class myProfileFragment : Fragment() {
             lifecycleScope.launch {
                 AppDatabase.getInstance(requireContext()).userDao().clear()
             }
+            SocketManager.disconnect()
             autViewModel.signOut(requireContext())
             Toast.makeText(context, "You logged out, have a great day", Toast.LENGTH_LONG).show()
             (activity as? MainActivity)?.navigateToLogin()
