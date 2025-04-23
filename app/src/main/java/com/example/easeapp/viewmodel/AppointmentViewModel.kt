@@ -24,7 +24,7 @@ class AppointmentViewModel(
         doctorId: String,
         appointmentDate: String,
         isEmergency: Boolean = false,
-        notes: String? = null,
+        notes:  List<String>? = null,
     ) {
         val request = AppointmentRequest(
             patientId = patientId,

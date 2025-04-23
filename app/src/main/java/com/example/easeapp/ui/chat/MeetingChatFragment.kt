@@ -118,7 +118,9 @@ class MeetingChatFragment : Fragment() {
             reconnection = true
         }
 
+        get-chat-from-db
         socket = IO.socket("http://10.0.2.2:2999", opts)
+
 
         socket.on(Socket.EVENT_CONNECT) {
             val joinData = JSONObject().apply {

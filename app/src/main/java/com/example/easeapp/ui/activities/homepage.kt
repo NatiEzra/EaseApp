@@ -89,8 +89,7 @@ class HomePageFragment : Fragment() {
 
 
     private fun openDiary() {
-        Toast.makeText(requireContext(), "Opening Diary...", Toast.LENGTH_SHORT).show()
-        // TODO: ניווט למסך Diary (כשתיצור)
+        findNavController().navigate(R.id.action_homePageFragment_to_diaryFragment)
     }
 
     private fun openEmergency() {
