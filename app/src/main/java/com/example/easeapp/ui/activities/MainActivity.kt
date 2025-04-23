@@ -1,5 +1,6 @@
 package com.example.ease.ui.activities
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -22,6 +23,7 @@ import com.example.ease.R
 import com.example.ease.model.local.AppDatabase
 import com.example.ease.model.local.UserEntity
 import com.example.ease.viewmodel.UserViewModel
+import com.example.easeapp.model.SocketManager
 import com.google.android.material.navigation.NavigationView
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.NetworkPolicy
@@ -91,7 +93,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         })
 
-        refreshProfile()
+        refreshProfile(this)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -130,7 +132,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         finish()
     }
 
-    fun refreshProfile() {
+    fun refreshProfile(context: Context) {
         val headerView = navView.getHeaderView(0)
         val headerProfileImage = headerView.findViewById<ImageView>(R.id.header_profile_image)
         val headerUserName = headerView.findViewById<TextView>(R.id.header_user_name)
@@ -139,6 +141,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         lifecycleScope.launch {
             val user: UserEntity? = AppDatabase.getInstance(this@MainActivity).userDao().getCurrentUser()
             if (user != null) {
+                SocketManager.init(user._id,context)
                 headerUserName.text = user.name
                 headerUserEmail.text = user.email
                 if (!user.profileImageUrl.isNullOrEmpty()) {

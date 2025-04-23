@@ -8,3 +8,5 @@ data class AppointmentRequest(
     val isEmergency: Boolean = false,
     val initiator: String
 )
+
+data class RoleRequest(val role: String)

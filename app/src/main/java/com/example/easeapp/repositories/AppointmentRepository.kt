@@ -7,6 +7,7 @@ import com.example.easeapp.model.requests.AppointmentRequest
 import com.example.easeapp.model.requests.AppointmentResponse
 import com.example.easeapp.model.requests.ClosestAppointmentResponse
 import com.example.easeapp.model.requests.RetrofitClientAppointments
+import com.example.easeapp.model.requests.RoleRequest
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -82,7 +83,7 @@ class AppointmentRepository {
         token = token.replace(";", "")
 
         RetrofitClientAppointments.appointmentsApi
-            .cancelAppointment("Bearer $token", appointmentId)
+            .cancelAppointment("Bearer $token", appointmentId, RoleRequest("patient"))
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {

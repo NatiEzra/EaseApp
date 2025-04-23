@@ -209,7 +209,7 @@ class editProfileFragment : Fragment() {
                                             )
                                         )
                                     }
-                                    (activity as? MainActivity)?.refreshProfile()
+                                    (activity as? MainActivity)?.refreshProfile(requireContext())
                                     (activity as? MainActivity)?.myProfilePageButtonClicked()
                                 }
                             } else {
