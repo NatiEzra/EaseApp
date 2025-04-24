@@ -24,8 +24,8 @@ data class AppointmentResponse(
 
 data class AppointmentDetails(
     val _id: String,
-    val patientId: UserDetails,
-    val patientName: String,
+    val patientId: Any,
+    val patientName: String?,
     val doctorId: String,
     val appointmentDate: String,
     val status: String,
@@ -33,7 +33,18 @@ data class AppointmentDetails(
     val isEmergency: Boolean,
     val createdAt: String,
     val updatedAt: String
-)
+) {
+    fun getPatientIdAsString(): String {
+        return when (patientId) {
+            is String -> patientId
+            is Map<*, *> -> patientId["_id"] as? String ?: "unknown"
+            else -> "unknown"
+        }
+    }
+}
+
+
+
 
 
 data class ClosestAppointmentResponse(

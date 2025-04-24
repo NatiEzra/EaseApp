@@ -1,5 +1,6 @@
 package com.example.easeapp.model.requests
 
+import com.example.easeapp.model.responses.SessionsByPatientResponse
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -41,13 +42,21 @@ interface AppointmentsApi {
         @Body roleBody: RoleRequest
     ): Call<Void>
 
+    @GET("/api/patients/{patientId}/sessions")
+    fun getSessionsByPatientId(
+        @Header("Authorization") token: String,
+        @Path("patientId") patientId: String
+    ): Call<SessionsByPatientResponse>
+
+
+
 
 
 }
 
 // אובייקט Retrofit
 object RetrofitClientAppointments {
-    private const val BASE_URL = "http://10.0.2.2:2999"
+    private const val BASE_URL = "http://192.168.1.105:3000"
     val appointmentsApi: AppointmentsApi by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

@@ -1,6 +1,8 @@
 package com.example.easeapp.repositories
 
 import android.content.Context
+import android.util.Log
+import com.example.ease.model.local.AppDatabase
 import com.example.ease.repositories.AuthRepository
 import com.example.easeapp.model.requests.AppointmentDetails
 import com.example.easeapp.model.requests.AppointmentRequest
@@ -8,6 +10,8 @@ import com.example.easeapp.model.requests.AppointmentResponse
 import com.example.easeapp.model.requests.ClosestAppointmentResponse
 import com.example.easeapp.model.requests.RetrofitClientAppointments
 import com.example.easeapp.model.requests.RoleRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -100,6 +104,46 @@ class AppointmentRepository {
             })
     }
 
+    suspend fun getUpcomingAppointmentForPatient(context: Context): AppointmentDetails? {
+        return withContext(Dispatchers.IO) {
+            var token = AuthRepository.shared.getAccessToken(context)
+                ?: throw Exception("No token")
+
+            token = token.replace("refreshToken=", "")
+            token = token.replace(";", "")
+
+            val bearerToken = "Bearer $token"
+            Log.d("AppointmentDebug", "Token: $bearerToken")
+
+            val user = AppDatabase.getInstance(context).userDao().getCurrentUser()
+                ?: throw Exception("No user")
+
+            Log.d("AppointmentDebug", "User ID: ${user._id}")
+
+            try {
+                Log.d("AppointmentDebug", "Calling API getSessionsByPatientId")
+                val response = RetrofitClientAppointments.appointmentsApi
+                    .getSessionsByPatientId(bearerToken, user._id)
+                    .execute()
+
+                Log.d("AppointmentDebug", "Response success: ${response.isSuccessful}")
+
+                if (!response.isSuccessful) {
+                    val error = response.errorBody()?.string()
+                    Log.e("AppointmentDebug", "API error: $error")
+                    throw Exception(error ?: "API error")
+                }
+
+                val body = response.body()
+                Log.d("AppointmentDebug", "API response body: $body")
+
+                return@withContext body?.sessions?.find { it.status == "confirmed" || it.status == "pending" }
+            } catch (e: Exception) {
+                Log.e("AppointmentDebug", "Retrofit call failed: ${e.message}", e)
+                throw e
+            }
+        }
+    }
 
 
 }

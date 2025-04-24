@@ -1,6 +1,5 @@
 package com.example.easeapp.ui.meeting
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -48,17 +47,7 @@ class AppointmentConfirmationFragment : Fragment() {
             time ?: "Unknown Time"
         }
 
-
-        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-        prefs.edit()
-            .putString("appointmentId", appointmentId)
-            .putString("doctorId", doctorId)
-            .putString("doctorName", doctorName)
-            .putString("date", date)
-            .putString("time", formattedTime)
-            .apply()
-
-        Log.d("CONFIRM", "✅ Saved doctorId to prefs: $doctorId")
+        Log.d("CONFIRM", "✅ Confirmed appointment: $appointmentId with $doctorId at $time")
 
         // טקסט התצוגה
         view.findViewById<TextView>(R.id.doctorText).text =
@@ -75,7 +64,7 @@ class AppointmentConfirmationFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(doctorName: String, date: String, time: String,appointmentId:String) =
+        fun newInstance(doctorName: String, date: String, time: String, appointmentId: String) =
             AppointmentConfirmationFragment().apply {
                 arguments = Bundle().apply {
                     putString("appointmentId", appointmentId)
