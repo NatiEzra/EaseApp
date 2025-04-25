@@ -26,6 +26,8 @@ data class AppointmentDetails(
     val _id: String,
     val patientId: Any,
     val patientName: String?,
+    val doctorName: String? = null,
+    val doctorImageUrl: String? = null,
     val doctorId: String,
     val appointmentDate: String,
     val status: String,

@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
 import com.example.easeapp.model.requests.AppointmentDetails
-import com.example.easeapp.model.requests.UserDetails
 import com.example.easeapp.repositories.AppointmentRepository
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
@@ -79,19 +78,8 @@ class MyMeetingFragment : Fragment() {
         btnChange.visibility = View.VISIBLE
         btnCancel.visibility = View.VISIBLE
 
-        val user = UserDetails(
-            _id = appointment.getPatientIdAsString(),
-            username = appointment.patientName ?: "Unknown",
-            email = "",
-            role = "patient",
-            profilePicture = null,
-            accessToken = "",
-            phoneNumber = null,
-            dateOfBirth = null,
-            gender = null
-        )
+        doctorNameText.text = appointment.doctorName ?: "Unknown Doctor"
 
-        doctorNameText.text = user.username
         val formattedDate = try {
             val instant = Instant.parse(appointment.appointmentDate)
             val localDateTime = instant.atZone(ZoneId.systemDefault())
@@ -102,20 +90,24 @@ class MyMeetingFragment : Fragment() {
 
         meetingDateText.text = formattedDate
 
+        val imageUrl = appointment.doctorImageUrl ?: "https://example.com/sample.jpg"
         Picasso.get()
-            .load(user.profilePicture ?: "https://example.com/sample.jpg")
+            .load(imageUrl)
+            .placeholder(R.drawable.account)
+            .error(R.drawable.account)
             .into(doctorImage)
 
         btnChange.setOnClickListener {
             AppointmentRepository.shared.cancelAppointment(requireContext(), appointment._id) { success, message ->
                 if (success) {
-                    displayNoAppointment()
-                    Toast.makeText(requireContext(), "Meeting canceled", Toast.LENGTH_SHORT).show()
+                    val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
+                    findNavController().navigate(action)
                 } else {
                     Toast.makeText(requireContext(), message ?: "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
                 }
             }
         }
+
 
         btnCancel.setOnClickListener {
             val dialogView = layoutInflater.inflate(R.layout.dialog_emergency_confirm, null)

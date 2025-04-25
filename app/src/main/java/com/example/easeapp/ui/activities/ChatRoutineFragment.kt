@@ -1,17 +1,17 @@
 package com.example.ease.ui.chat
 
-import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
-import com.example.easeapp.ui.chat.MeetingChatFragmentDirections.Companion.actionRoutineFragmentToMeetingChatFragment
+import com.example.easeapp.repositories.AppointmentRepository
+import kotlinx.coroutines.launch
 
 class ChatRoutineFragment : Fragment() {
 
@@ -28,33 +28,44 @@ class ChatRoutineFragment : Fragment() {
         val btnJoinMeeting = view.findViewById<Button>(R.id.btnJoinMeeting)
 
         btnSchedule.setOnClickListener {
-            val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-            val hasMeeting = prefs.getString("doctorName", null) != null
-
-            if (hasMeeting) {
-                findNavController().navigate(R.id.myMeetingFragment)
-            } else {
-
-                findNavController().navigate(R.id.scheduleRoutineMeeting)
+            lifecycleScope.launch {
+                try {
+                    val appointment = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+                    if (appointment != null) {
+                        val action = ChatRoutineFragmentDirections.actionRoutineFragmentToMyMeetingFragment()
+                        findNavController().navigate(action)
+                    } else {
+                        val action = ChatRoutineFragmentDirections.actionChatRoutineFragmentToScheduleRoutineMeeting()
+                        findNavController().navigate(action)
+                    }
+                } catch (e: Exception) {
+                    val action = ChatRoutineFragmentDirections.actionChatRoutineFragmentToScheduleRoutineMeeting()
+                    findNavController().navigate(action)
+                }
             }
         }
+
         btnMyMeeting.setOnClickListener {
             val action = ChatRoutineFragmentDirections.actionRoutineFragmentToMyMeetingFragment()
             findNavController().navigate(action)
         }
 
         btnJoinMeeting.setOnClickListener {
-            val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-            val appointmentId = prefs.getString("appointmentId", null)
-            Log.d("JOIN_MEETING", "appointmentId from prefs: $appointmentId")
+            lifecycleScope.launch {
+                try {
+                    val appointment = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
 
-            if (appointmentId != null) {
-                val action = ChatRoutineFragmentDirections.actionRoutineFragmentToMeetingChatFragment(appointmentId)
-                findNavController().navigate(action)
-            } else {
-                Toast.makeText(requireContext(), "No meeting found", Toast.LENGTH_SHORT).show()
+                    if (appointment != null && appointment.status == "confirmed") {
+                        val action = ChatRoutineFragmentDirections
+                            .actionRoutineFragmentToMeetingChatFragment(appointment._id)
+                        findNavController().navigate(action)
+                    } else {
+                        Toast.makeText(requireContext(), "No active meeting found", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Error checking meeting status", Toast.LENGTH_SHORT).show()
+                }
             }
         }
-
     }
 }
