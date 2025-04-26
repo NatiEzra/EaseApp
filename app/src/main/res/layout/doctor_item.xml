@@ -50,7 +50,14 @@
                 android:text="7 Years experience"
                 android:textSize="14sp"
                 android:textColor="#555" />
+
         </LinearLayout>
+
+        <ImageView
+            android:id="@+id/doctor_star"
+            android:layout_width="49dp"
+            android:layout_height="47dp"
+            app:srcCompat="@drawable/star_outline" />
 
         <Button
             android:id="@+id/bookNowBtn"

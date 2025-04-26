@@ -2,6 +2,7 @@ package com.example.easeapp.repositories
 
 import android.content.Context
 import android.util.Log
+import com.example.ease.model.UserRepository
 import com.example.ease.model.local.AppDatabase
 import com.example.ease.repositories.AuthRepository
 import com.example.easeapp.model.requests.AppointmentDetails
@@ -106,6 +107,44 @@ class AppointmentRepository {
 
     suspend fun getUpcomingAppointmentForPatient(context: Context): AppointmentDetails? {
         return withContext(Dispatchers.IO) {
+            // --- auth setup omitted for brevity; keep your token+DB code here ---
+            val tokenRaw = AuthRepository.shared.getAccessToken(context)
+                ?: throw Exception("No token")
+            val bearer = "Bearer " + tokenRaw
+                .replace("refreshToken=", "")
+                .replace(";", "")
+
+            val user = AppDatabase.getInstance(context)
+                .userDao()
+                .getCurrentUser()
+                ?: throw Exception("No user")
+
+            val response = RetrofitClientAppointments.appointmentsApi
+                .getSessionsByPatientId(bearer, user._id)
+                .execute()
+
+            if (!response.isSuccessful) {
+                throw Exception(response.errorBody()?.string() ?: "API error")
+            }
+
+            val sessions = response.body()?.sessions.orEmpty()
+
+            // 3) Sequentially await each doctor‐profile load:
+            for (session in sessions) {
+                // this suspend‐call will block this coroutine until the callback resumes
+                val profile = UserRepository
+                    .getInstance(context)
+                    .fetchUserProfile(context, session.doctorId!!)
+                session.doctorName = profile.user.username
+            }
+
+            // finally, return the first “confirmed” or “pending”
+            return@withContext sessions.find { it.status == "confirmed" || it.status == "pending" }
+        }
+    }
+
+    suspend fun getAllMyMeetings(context: Context): List<AppointmentDetails>? {
+        return withContext(Dispatchers.IO) {
             var token = AuthRepository.shared.getAccessToken(context)
                 ?: throw Exception("No token")
 
@@ -137,7 +176,7 @@ class AppointmentRepository {
                 val body = response.body()
                 Log.d("AppointmentDebug", "API response body: $body")
 
-                return@withContext body?.sessions?.find { it.status == "confirmed" || it.status == "pending" }
+                return@withContext body?.sessions
             } catch (e: Exception) {
                 Log.e("AppointmentDebug", "Retrofit call failed: ${e.message}", e)
                 throw e

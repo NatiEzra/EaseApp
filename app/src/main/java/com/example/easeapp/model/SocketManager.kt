@@ -17,7 +17,8 @@ object SocketManager {
             reconnection = true
         }
 
-        socket = IO.socket("http://192.168.1.105:3000", opts)
+        //socket = IO.socket("http://192.168.1.105:3000", opts)
+        socket = IO.socket("http://10.0.2.2:2999", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
             // subscribe globally _and_ to chats
