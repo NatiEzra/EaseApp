@@ -36,6 +36,7 @@ class DoctorsViewHolder(
     private val closestSlotTextView: TextView = itemView.findViewById(R.id.doctorExperience)
     private val doctorImageView: ImageView = itemView.findViewById(R.id.doctorImage)
     private val bookButton: Button = itemView.findViewById(R.id.bookNowBtn)
+    private val doctorStar: ImageView = itemView.findViewById(R.id.doctor_star)
 
     private fun fixImageUrl(oldUrl: String): String {
         return oldUrl.replace("http://localhost:", "http://10.0.2.2:")
@@ -55,6 +56,7 @@ class DoctorsViewHolder(
 
         doctorNameTextView.text = doctor.username
 
+        doctorStar.visibility= if (doctor.isLastDoctor!!) View.VISIBLE else View.GONE
         getClosestAppointment(itemView.context, doctor._id)
 
         val profilePicture = fixImageUrl(doctor.profilePicture)
@@ -189,7 +191,7 @@ class ScheduleRoutineMeeting : Fragment() {
     }
 
     private fun getAllDoctors() {
-        userViewModel.fetchAlldoctors()
+        userViewModel.fetchAlldoctors(requireContext())
     }
 
     companion object {

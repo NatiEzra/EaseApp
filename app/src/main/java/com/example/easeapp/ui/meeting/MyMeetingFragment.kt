@@ -1,6 +1,5 @@
 package com.example.easeapp.ui.meeting
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,11 +9,16 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
-import com.example.easeapp.viewmodel.AppointmentViewModel
+import com.example.easeapp.model.requests.AppointmentDetails
+import com.example.easeapp.repositories.AppointmentRepository
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class MyMeetingFragment : Fragment() {
 
@@ -26,7 +30,6 @@ class MyMeetingFragment : Fragment() {
     private lateinit var btnScheduleNew: Button
     private lateinit var meetingLayout: View
     private lateinit var emptyLayout: View
-    private lateinit var appointmentViewModel: AppointmentViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,9 +39,6 @@ class MyMeetingFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        appointmentViewModel = ViewModelProvider(this)[AppointmentViewModel::class.java]
-
         doctorNameText = view.findViewById(R.id.doctorName)
         meetingDateText = view.findViewById(R.id.meetingDate)
         doctorImage = view.findViewById(R.id.doctorImage)
@@ -48,103 +48,113 @@ class MyMeetingFragment : Fragment() {
         meetingLayout = view.findViewById(R.id.meetingCardLayout)
         emptyLayout = view.findViewById(R.id.emptyLayout)
 
-        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-        val doctorName = prefs.getString("doctorName", null)
-        val date = prefs.getString("date", null)
-        val time = prefs.getString("time", null)
-        val appointmentId = prefs.getString("appointmentId", null)
-        val meetingEnded = prefs.getBoolean("meetingEnded", false)
-
-        if (doctorName != null && date != null && time != null && !meetingEnded) {
-            // יש פגישה שלא הסתיימה
-            meetingLayout.visibility = View.VISIBLE
-            emptyLayout.visibility = View.GONE
-            btnChange.visibility = View.VISIBLE
-            btnCancel.visibility = View.VISIBLE
-
-            doctorNameText.text = doctorName
-            meetingDateText.text = "$date at $time"
-            Picasso.get().load("https://example.com/sample.jpg").into(doctorImage)
-
-            btnChange.setOnClickListener {
-                val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-                val appointmentId = prefs.getString("appointmentId", null)
-
-                if (appointmentId != null) {
-                    appointmentViewModel.cancelAppointment(requireContext(), appointmentId)
-
-                    appointmentViewModel.cancelAppointmentStatus.observe(viewLifecycleOwner) { result ->
-                        result.onSuccess {
-                            prefs.edit().clear().apply()
-
-                            val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
-                            findNavController().navigate(action)
-                        }
-
-                        result.onFailure {
-                            Toast.makeText(requireContext(), "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            }
-
-            btnCancel.setOnClickListener {
-                val dialogView = layoutInflater.inflate(R.layout.dialog_emergency_confirm, null)
-
-                dialogView.findViewById<TextView>(R.id.textAreYouSure).text = "Are you sure you want to cancel this appointment?"
-                dialogView.findViewById<Button>(R.id.btnStartEmergency).text = "Cancel my appointment"
-
-                val dialog = android.app.AlertDialog.Builder(requireContext())
-                    .setView(dialogView)
-                    .setCancelable(true)
-                    .create()
-
-                val confirmButton = dialogView.findViewById<Button>(R.id.btnStartEmergency)
-                val cancelButton = dialogView.findViewById<Button>(R.id.btnCancel)
-
-                confirmButton.setOnClickListener {
-                    val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-                    val appointmentId = prefs.getString("appointmentId", null)
-
-                    if (appointmentId != null) {
-                        appointmentViewModel.cancelAppointment(requireContext(), appointmentId)
-                    }
-
-                    prefs.edit().clear().apply()
-                    Toast.makeText(requireContext(), "Meeting canceled", Toast.LENGTH_SHORT).show()
-
-                    meetingLayout.visibility = View.GONE
-                    emptyLayout.visibility = View.VISIBLE
-                    btnCancel.visibility = View.GONE
-                    btnChange.visibility = View.GONE
-
-                    dialog.dismiss()
-                }
-
-                cancelButton.setOnClickListener {
-                    dialog.dismiss()
-                }
-
-                dialog.show()
-            }
-
-        } else {
-            meetingLayout.visibility = View.GONE
-            emptyLayout.visibility = View.VISIBLE
-        }
+        fetchAndDisplayAppointment()
 
         btnScheduleNew.setOnClickListener {
-            val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-            prefs.edit().putBoolean("meetingEnded", false).apply() // איפוס כשקובעים חדשה
-
             val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
             findNavController().navigate(action)
         }
+    }
 
-        appointmentViewModel.cancelAppointmentStatus.observe(viewLifecycleOwner) { result ->
-            result.onFailure {
-                Toast.makeText(requireContext(), "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
+    private fun fetchAndDisplayAppointment() {
+        lifecycleScope.launch {
+            try {
+                val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+                val appointment = appointments?.firstOrNull { appt ->
+                    appt.status == "confirmed"
+                            || (appt.status == "pending" && appt.isEmergency == false)
+                }
+                if (appointment != null) {
+                    displayAppointment(appointment)
+                } else {
+                    displayNoAppointment()
+                }
+            } catch (e: Exception) {
+                displayNoAppointment()
+                //Toast.makeText(requireContext(), e.message ?: "Failed to load appointment", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun displayAppointment(appointment: AppointmentDetails) {
+        meetingLayout.visibility = View.VISIBLE
+        emptyLayout.visibility = View.GONE
+        btnChange.visibility = View.VISIBLE
+        btnCancel.visibility = View.VISIBLE
+
+        doctorNameText.text = appointment.doctorName ?: "Unknown Doctor"
+
+        val formattedDate = try {
+            val instant = Instant.parse(appointment.appointmentDate)
+            val localDateTime = instant.atZone(ZoneId.systemDefault())
+            localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
+        } catch (e: Exception) {
+            appointment.appointmentDate
+        }
+
+        meetingDateText.text = formattedDate
+
+        val imageUrl = appointment.doctorImageUrl ?: "https://example.com/sample.jpg"
+        Picasso.get()
+            .load(imageUrl)
+            .placeholder(R.drawable.account)
+            .error(R.drawable.account)
+            .into(doctorImage)
+
+        btnChange.setOnClickListener {
+            AppointmentRepository.shared.deleteAppointment(requireContext(), appointment._id) { success, message ->
+                if (success) {
+                    val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
+                    findNavController().navigate(action)
+                } else {
+                    Toast.makeText(requireContext(), message ?: "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+
+        btnCancel.setOnClickListener {
+            val dialogView = layoutInflater.inflate(R.layout.dialog_emergency_confirm, null)
+
+            dialogView.findViewById<TextView>(R.id.textAreYouSure).text = "Are you sure you want to cancel this appointment?"
+            dialogView.findViewById<Button>(R.id.btnStartEmergency).text = "Cancel my appointment"
+
+            val dialog = android.app.AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create()
+
+            val confirmButton = dialogView.findViewById<Button>(R.id.btnStartEmergency)
+            val cancelButton = dialogView.findViewById<Button>(R.id.btnCancel)
+
+            confirmButton.setOnClickListener {
+                AppointmentRepository.shared.cancelAppointment(requireContext(), appointment._id) { success, message ->
+                    if (success) {
+                        displayNoAppointment()
+                        Toast.makeText(requireContext(), "Meeting canceled", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), message ?: "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                dialog.dismiss()
+            }
+
+            cancelButton.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        }
+    }
+
+    private fun displayNoAppointment() {
+        meetingLayout.visibility = View.GONE
+        emptyLayout.visibility = View.VISIBLE
+        btnCancel.visibility = View.GONE
+        btnChange.visibility = View.GONE
+        btnScheduleNew.visibility = View.VISIBLE
+
+        val emptyText = emptyLayout.findViewById<TextView>(R.id.emptyMessage)
+        emptyText?.text = "No meeting found. Let's schedule one!"
     }
 }

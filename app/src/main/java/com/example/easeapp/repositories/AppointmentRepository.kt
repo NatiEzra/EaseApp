@@ -1,6 +1,9 @@
 package com.example.easeapp.repositories
 
 import android.content.Context
+import android.util.Log
+import com.example.ease.model.UserRepository
+import com.example.ease.model.local.AppDatabase
 import com.example.ease.repositories.AuthRepository
 import com.example.easeapp.model.requests.AppointmentDetails
 import com.example.easeapp.model.requests.AppointmentRequest
@@ -8,6 +11,9 @@ import com.example.easeapp.model.requests.AppointmentResponse
 import com.example.easeapp.model.requests.ClosestAppointmentResponse
 import com.example.easeapp.model.requests.RetrofitClientAppointments
 import com.example.easeapp.model.requests.RoleRequest
+import com.example.easeapp.model.requests.UpdateAppointmentRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -72,7 +78,7 @@ class AppointmentRepository {
             })
     }
 
-    fun cancelAppointment(
+    fun deleteAppointment(
         context: Context,
         appointmentId: String,
         onComplete: (Boolean, String?) -> Unit
@@ -100,6 +106,124 @@ class AppointmentRepository {
             })
     }
 
+    fun cancelAppointment(
+        context: Context,
+        appointmentId: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        var token = AuthRepository.shared.getAccessToken(context) ?: return onComplete(false, "No token found")
+
+        token = token.replace("refreshToken=", "")
+        token = token.replace(";", "")
+
+        val body = UpdateAppointmentRequest(status = "canceled")
+
+        // 3) call the API
+        RetrofitClientAppointments
+            .appointmentsApi
+            .updateAppointment("Bearer $token", appointmentId, body)
+            .enqueue(object : Callback<AppointmentResponse> {
+                override fun onResponse(
+                    call: Call<AppointmentResponse>,
+                    response: Response<AppointmentResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        onComplete(true, response.body()?.appointment?._id)
+                    } else {
+                        onComplete(false, null)
+                    }
+                }
+
+                override fun onFailure(call: Call<AppointmentResponse>, t: Throwable) {
+                    onComplete(false, t.message)
+                }
+            })
+    }
+
+    suspend fun getUpcomingAppointmentForPatient(context: Context): MutableList<AppointmentDetails>? {
+        return withContext(Dispatchers.IO) {
+            // --- auth setup omitted for brevity; keep your token+DB code here ---
+            val tokenRaw = AuthRepository.shared.getAccessToken(context)
+                ?: throw Exception("No token")
+            val bearer = "Bearer " + tokenRaw
+                .replace("refreshToken=", "")
+                .replace(";", "")
+
+            val user = AppDatabase.getInstance(context)
+                .userDao()
+                .getCurrentUser()
+                ?: throw Exception("No user")
+
+            val response = RetrofitClientAppointments.appointmentsApi
+                .getSessionsByPatientId(bearer, user._id)
+                .execute()
+
+            if (!response.isSuccessful) {
+                throw Exception(response.errorBody()?.string() ?: "API error")
+            }
+
+            val sessions = response.body()?.sessions.orEmpty()
+
+            // 3) Sequentially await each doctor‐profile load:
+            for (session in sessions) {
+                // this suspend‐call will block this coroutine until the callback resumes
+                val profile = UserRepository
+                    .getInstance(context)
+                    .fetchUserProfile(context, session.doctorId!!)
+                session.doctorName = profile.user.username
+            }
+            val details = mutableListOf<AppointmentDetails>()
+            for (session in sessions) {
+                if (session.status == "confirmed" || session.status == "pending") {
+                    details.add(session)
+                }
+            }
+            return@withContext details
+            // finally, return the first “confirmed” or “pending”
+            //return@withContext sessions.find { it.status == "confirmed" || it.status == "pending" }
+        }
+    }
+
+    suspend fun getAllMyMeetings(context: Context): List<AppointmentDetails>? {
+        return withContext(Dispatchers.IO) {
+            var token = AuthRepository.shared.getAccessToken(context)
+                ?: throw Exception("No token")
+
+            token = token.replace("refreshToken=", "")
+            token = token.replace(";", "")
+
+            val bearerToken = "Bearer $token"
+            Log.d("AppointmentDebug", "Token: $bearerToken")
+
+            val user = AppDatabase.getInstance(context).userDao().getCurrentUser()
+                ?: throw Exception("No user")
+
+            Log.d("AppointmentDebug", "User ID: ${user._id}")
+
+            try {
+                Log.d("AppointmentDebug", "Calling API getSessionsByPatientId")
+                val response = RetrofitClientAppointments.appointmentsApi
+                    .getSessionsByPatientId(bearerToken, user._id)
+                    .execute()
+
+                Log.d("AppointmentDebug", "Response success: ${response.isSuccessful}")
+
+                if (!response.isSuccessful) {
+                    val error = response.errorBody()?.string()
+                    Log.e("AppointmentDebug", "API error: $error")
+                    throw Exception(error ?: "API error")
+                }
+
+                val body = response.body()
+                Log.d("AppointmentDebug", "API response body: $body")
+
+                return@withContext body?.sessions
+            } catch (e: Exception) {
+                Log.e("AppointmentDebug", "Retrofit call failed: ${e.message}", e)
+                throw e
+            }
+        }
+    }
 
 
 }

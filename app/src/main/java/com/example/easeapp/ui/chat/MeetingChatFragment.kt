@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,6 +21,7 @@ import com.example.ease.R
 import com.example.easeapp.model.AppAlertHandler
 import com.example.easeapp.model.ChatMessage
 import com.example.easeapp.model.SocketManager
+import com.example.easeapp.repositories.AppointmentRepository
 import com.example.easeapp.repository.ChatRepository
 import com.squareup.picasso.Picasso
 import io.socket.client.IO
@@ -28,7 +30,6 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-
 
 class MeetingChatFragment : Fragment() {
 
@@ -56,13 +57,20 @@ class MeetingChatFragment : Fragment() {
         val doctorNameTextView = view.findViewById<TextView>(R.id.doctorName)
         val doctorImageView = view.findViewById<ImageView>(R.id.doctorImage)
 
-        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-        val doctorName = prefs.getString("doctorName", "Doctor")
-        val doctorImageUrl = prefs.getString("doctorImageUrl", null)
-
         lifecycleScope.launch {
             try {
+                val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+
+                val appointment = appointments?.firstOrNull { appt ->
+                    appt.status == "confirmed" || (appt.status == "pending" && !appt.isEmergency)
+                }
+                if (appointment == null || appointment.status != "confirmed") {
+                    showBlockedChatDialog("You cannot access the chat because the appointment is not active.")
+                    return@launch
+                }
+
                 val apiService = Retrofit.Builder()
+                    //.baseUrl("http://192.168.1.105:3000/")
                     .baseUrl("http://10.0.2.2:2999/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
@@ -72,32 +80,23 @@ class MeetingChatFragment : Fragment() {
 
                 val historyMessages = repository.fetchChatHistory(
                     args.appointmentId,
-                    getUserIdFromPrefs(),
-                    getDoctorImageUrl(),
+                    getUserId(),
+                    appointment.doctorId ?: "",
                     requireContext()
                 )
-                Log.d("Chat", "Messages from server: $historyMessages")
+
+                doctorNameTextView.text = appointment.doctorName
 
                 messages.addAll(historyMessages)
                 adapter.notifyDataSetChanged()
                 messageContainer.scrollToPosition(messages.size - 1)
+
+                connectSocket()
             } catch (e: Exception) {
-                Log.e("Chat", "Error fetching history: ${e.message}")
+                Log.e("Chat", "Error fetching appointment or history: ${e.message}")
+                showBlockedChatDialog("An error occurred while loading the chat.")
             }
         }
-
-
-
-
-        doctorNameTextView.text = doctorName
-        if (!doctorImageUrl.isNullOrEmpty()) {
-            Picasso.get()
-                .load(doctorImageUrl)
-                .placeholder(R.drawable.account)
-                .into(doctorImageView)
-        }
-
-        connectSocket()
 
         sendIcon.setOnClickListener {
             sendCurrentMessage()
@@ -119,12 +118,13 @@ class MeetingChatFragment : Fragment() {
             reconnection = true
         }
 
+        //socket = IO.socket("http://192.168.1.105:3000", opts)
         socket = IO.socket("http://10.0.2.2:2999", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
             val joinData = JSONObject().apply {
                 put("meetingId", args.appointmentId)
-                put("userId", getUserIdFromPrefs())
+                put("userId", getUserId())
                 put("role", "patient")
             }
             socket.emit("joinRoom", joinData)
@@ -139,12 +139,10 @@ class MeetingChatFragment : Fragment() {
             }
         }
 
-
-
         socket.on("newMessage") { args ->
             val data = args[0] as JSONObject
             val senderId = data.getString("from")
-            val currentUserId = getUserIdFromPrefs()
+            val currentUserId = getUserId()
 
             if (senderId != currentUserId) {
                 val msg = data.getString("message")
@@ -153,9 +151,8 @@ class MeetingChatFragment : Fragment() {
                 val timestamp = java.time.Instant.from(formatter.parse(timestampString)).toEpochMilli()
 
                 activity?.runOnUiThread {
-                    addMessageToUI(msg, fromMe = false, timestamp = timestamp, profileImageUrl = getDoctorImageUrl())
+                    addMessageToUI(msg, fromMe = false, timestamp = timestamp, profileImageUrl = null)
                 }
-
             }
         }
 
@@ -169,19 +166,10 @@ class MeetingChatFragment : Fragment() {
             messageInput.text.clear()
         }
     }
+
     private fun handleSessionEnd(summary: String) {
         messageInput.isEnabled = false
         sendIcon.isEnabled = false
-
-        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-        prefs.edit()
-            .putBoolean("meetingEnded", true)
-            .remove("doctorName")
-            .remove("doctorImageUrl")
-            .remove("appointmentId")
-            .remove("date")
-            .remove("time")
-            .apply()
 
         val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Session Ended")
@@ -196,18 +184,18 @@ class MeetingChatFragment : Fragment() {
         socket.disconnect()
     }
 
-
-
     private fun sendMessage(messageText: String) {
         val msgData = JSONObject().apply {
             put("meetingId", args.appointmentId)
-            put("from", getUserIdFromPrefs())
-            put("to", getDoctorIdFromPrefs())
+            put("from", getUserId())
+            put("to", "doctor")
             put("message", messageText)
             put("timestamp", System.currentTimeMillis())
         }
 
-        socket.emit("sendMessage", msgData)
+        if (::socket.isInitialized) {
+            socket.emit("sendMessage", msgData)
+        }
         addMessageToUI(messageText, fromMe = true, timestamp = System.currentTimeMillis(), profileImageUrl = null)
     }
 
@@ -217,23 +205,30 @@ class MeetingChatFragment : Fragment() {
         messageContainer.scrollToPosition(adapter.itemCount - 1)
     }
 
-    private fun getUserIdFromPrefs(): String {
+    private fun showBlockedChatDialog(message: String) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Chat Unavailable")
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("OK") { _, _ ->
+                if (isAdded) {
+                    requireActivity().onBackPressedDispatcher.onBackPressed()
+                }
+            }
+            .show()
+    }
+
+
+    private fun getUserId(): String {
         val prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         return prefs.getString("userId", "") ?: ""
     }
 
-    private fun getDoctorIdFromPrefs(): String {
-        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-        return prefs.getString("doctorId", "") ?: ""
-    }
-
-    private fun getDoctorImageUrl(): String? {
-        val prefs = requireContext().getSharedPreferences("meeting_prefs", Context.MODE_PRIVATE)
-        return prefs.getString("doctorImageUrl", null)
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
-        socket.disconnect()
+        if (::socket.isInitialized) {
+            socket.disconnect()
+        }
     }
+
 }

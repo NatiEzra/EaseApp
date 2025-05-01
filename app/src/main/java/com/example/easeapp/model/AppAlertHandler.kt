@@ -1,4 +1,5 @@
 package com.example.easeapp.model
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Handler
@@ -9,6 +10,7 @@ object AppAlertHandler {
 
     fun showGlobalDialog(context: Context, message: String) {
         // get the main thread’s Handler
+        if (context !is Activity || context.isFinishing) return
         val mainHandler = Handler(Looper.getMainLooper())
         mainHandler.post {
             // now we are safely on the UI thread

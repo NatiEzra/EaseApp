@@ -50,7 +50,7 @@ interface DiaryApi {
     ): Response<DiaryResponse>
 }
 object RetrofitClientDiary  {
-//    private const val BASE_URL = "http://10.100.102.175:3000"
+    //private const val BASE_URL = "http://192.168.1.105:3000"
     private const val BASE_URL = "http://10.0.2.2:2999"
 
 

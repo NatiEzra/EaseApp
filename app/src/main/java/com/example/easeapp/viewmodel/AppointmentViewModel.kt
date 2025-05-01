@@ -21,8 +21,8 @@ class AppointmentViewModel(
     fun createAppointment(
         context: Context,
         patientId: String,
-        doctorId: String,
-        appointmentDate: String,
+        doctorId: String?,
+        appointmentDate: String?,
         isEmergency: Boolean = false,
         notes:  List<String>? = null,
     ) {
