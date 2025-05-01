@@ -10,6 +10,7 @@ import retrofit2.http.GET
 import retrofit2.http.HTTP
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -47,6 +48,14 @@ interface AppointmentsApi {
         @Header("Authorization") token: String,
         @Path("patientId") patientId: String
     ): Call<SessionsByPatientResponse>
+
+    @PUT("/api/appointments/{appointmentId}")
+    fun updateAppointment(
+        @Header("Authorization") auth: String,
+        @Path("appointmentId") appointmentId: String,
+        @Body request: UpdateAppointmentRequest
+    ): Call<AppointmentResponse>
+
 
 
 

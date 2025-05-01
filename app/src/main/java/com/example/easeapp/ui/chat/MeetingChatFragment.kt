@@ -59,9 +59,11 @@ class MeetingChatFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val appointment = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+                val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
 
-
+                val appointment = appointments?.firstOrNull { appt ->
+                    appt.status == "confirmed" || (appt.status == "pending" && !appt.isEmergency)
+                }
                 if (appointment == null || appointment.status != "confirmed") {
                     showBlockedChatDialog("You cannot access the chat because the appointment is not active.")
                     return@launch
@@ -83,7 +85,7 @@ class MeetingChatFragment : Fragment() {
                     requireContext()
                 )
 
-                doctorNameTextView.text = appointment.patientName
+                doctorNameTextView.text = appointment.doctorName
 
                 messages.addAll(historyMessages)
                 adapter.notifyDataSetChanged()

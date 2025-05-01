@@ -53,15 +53,18 @@ class ChatRoutineFragment : Fragment() {
         btnJoinMeeting.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    val appointment = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
-
-                    if (appointment != null && appointment.status == "confirmed") {
-                        val action = ChatRoutineFragmentDirections
-                            .actionRoutineFragmentToMeetingChatFragment(appointment._id)
-                        findNavController().navigate(action)
-                    } else {
-                        Toast.makeText(requireContext(), "No active meeting found", Toast.LENGTH_SHORT).show()
+                    val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+                    if (appointments != null) {
+                        for (appointment in appointments) {
+                            if (appointment.status == "confirmed") {
+                                val action = ChatRoutineFragmentDirections
+                                    .actionRoutineFragmentToMeetingChatFragment(appointment._id)
+                                findNavController().navigate(action)
+                                return@launch
+                            }
+                        }
                     }
+                    Toast.makeText(requireContext(), "No active meeting found", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Toast.makeText(requireContext(), "Error checking meeting status", Toast.LENGTH_SHORT).show()
                 }

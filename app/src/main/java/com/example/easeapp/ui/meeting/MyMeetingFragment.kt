@@ -59,7 +59,11 @@ class MyMeetingFragment : Fragment() {
     private fun fetchAndDisplayAppointment() {
         lifecycleScope.launch {
             try {
-                val appointment = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+                val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+                val appointment = appointments?.firstOrNull { appt ->
+                    appt.status == "confirmed"
+                            || (appt.status == "pending" && appt.isEmergency == false)
+                }
                 if (appointment != null) {
                     displayAppointment(appointment)
                 } else {
@@ -67,7 +71,7 @@ class MyMeetingFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 displayNoAppointment()
-                Toast.makeText(requireContext(), e.message ?: "Failed to load appointment", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(requireContext(), e.message ?: "Failed to load appointment", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -98,7 +102,7 @@ class MyMeetingFragment : Fragment() {
             .into(doctorImage)
 
         btnChange.setOnClickListener {
-            AppointmentRepository.shared.cancelAppointment(requireContext(), appointment._id) { success, message ->
+            AppointmentRepository.shared.deleteAppointment(requireContext(), appointment._id) { success, message ->
                 if (success) {
                     val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
                     findNavController().navigate(action)

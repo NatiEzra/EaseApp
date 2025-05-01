@@ -11,6 +11,7 @@ import com.example.easeapp.model.requests.AppointmentResponse
 import com.example.easeapp.model.requests.ClosestAppointmentResponse
 import com.example.easeapp.model.requests.RetrofitClientAppointments
 import com.example.easeapp.model.requests.RoleRequest
+import com.example.easeapp.model.requests.UpdateAppointmentRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Call
@@ -77,7 +78,7 @@ class AppointmentRepository {
             })
     }
 
-    fun cancelAppointment(
+    fun deleteAppointment(
         context: Context,
         appointmentId: String,
         onComplete: (Boolean, String?) -> Unit
@@ -105,7 +106,41 @@ class AppointmentRepository {
             })
     }
 
-    suspend fun getUpcomingAppointmentForPatient(context: Context): AppointmentDetails? {
+    fun cancelAppointment(
+        context: Context,
+        appointmentId: String,
+        onComplete: (Boolean, String?) -> Unit
+    ) {
+        var token = AuthRepository.shared.getAccessToken(context) ?: return onComplete(false, "No token found")
+
+        token = token.replace("refreshToken=", "")
+        token = token.replace(";", "")
+
+        val body = UpdateAppointmentRequest(status = "canceled")
+
+        // 3) call the API
+        RetrofitClientAppointments
+            .appointmentsApi
+            .updateAppointment("Bearer $token", appointmentId, body)
+            .enqueue(object : Callback<AppointmentResponse> {
+                override fun onResponse(
+                    call: Call<AppointmentResponse>,
+                    response: Response<AppointmentResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        onComplete(true, response.body()?.appointment?._id)
+                    } else {
+                        onComplete(false, null)
+                    }
+                }
+
+                override fun onFailure(call: Call<AppointmentResponse>, t: Throwable) {
+                    onComplete(false, t.message)
+                }
+            })
+    }
+
+    suspend fun getUpcomingAppointmentForPatient(context: Context): MutableList<AppointmentDetails>? {
         return withContext(Dispatchers.IO) {
             // --- auth setup omitted for brevity; keep your token+DB code here ---
             val tokenRaw = AuthRepository.shared.getAccessToken(context)
@@ -137,9 +172,15 @@ class AppointmentRepository {
                     .fetchUserProfile(context, session.doctorId!!)
                 session.doctorName = profile.user.username
             }
-
+            val details = mutableListOf<AppointmentDetails>()
+            for (session in sessions) {
+                if (session.status == "confirmed" || session.status == "pending") {
+                    details.add(session)
+                }
+            }
+            return@withContext details
             // finally, return the first “confirmed” or “pending”
-            return@withContext sessions.find { it.status == "confirmed" || it.status == "pending" }
+            //return@withContext sessions.find { it.status == "confirmed" || it.status == "pending" }
         }
     }
 
