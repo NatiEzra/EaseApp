@@ -9,9 +9,9 @@ import com.example.easeapp.model.requests.AppointmentDetails
 import com.example.easeapp.model.requests.AppointmentRequest
 import com.example.easeapp.model.requests.AppointmentResponse
 import com.example.easeapp.model.requests.ClosestAppointmentResponse
-import com.example.easeapp.model.requests.RetrofitClientAppointments
 import com.example.easeapp.model.requests.RoleRequest
 import com.example.easeapp.model.requests.UpdateAppointmentRequest
+import com.example.easeapp.model.requests.appointmentsApiClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.Call
@@ -33,7 +33,7 @@ class AppointmentRepository {
         var token= AuthRepository.shared.getAccessToken(context) ?: return onComplete(false, null, "No token found")
         token = token.replace("refreshToken=", "")
         token = token.replace(";", "")
-        RetrofitClientAppointments.appointmentsApi.createAppointment("Bearer $token", request)
+        appointmentsApiClient.create(context).createAppointment(request)
             .enqueue(object : Callback<AppointmentResponse> {
                 override fun onResponse(call: Call<AppointmentResponse>, response: Response<AppointmentResponse>) {
                     if (response.isSuccessful) {
@@ -58,7 +58,7 @@ class AppointmentRepository {
         var token= AuthRepository.shared.getAccessToken(context) ?: return onComplete(false, null, "No token found")
         token = token.replace("refreshToken=", "")
         token = token.replace(";", "")
-        RetrofitClientAppointments.appointmentsApi.getClosestAppointmentByDoctor("Bearer $token", doctorId)
+        appointmentsApiClient.create(context).getClosestAppointmentByDoctor( doctorId)
             .enqueue(object : Callback<ClosestAppointmentResponse> {
                 override fun onResponse(
                     call: Call<ClosestAppointmentResponse>,
@@ -88,8 +88,8 @@ class AppointmentRepository {
         token = token.replace("refreshToken=", "")
         token = token.replace(";", "")
 
-        RetrofitClientAppointments.appointmentsApi
-            .cancelAppointment("Bearer $token", appointmentId, RoleRequest("patient"))
+        appointmentsApiClient.create(context)
+            .cancelAppointment( appointmentId, RoleRequest("patient"))
             .enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
@@ -119,9 +119,8 @@ class AppointmentRepository {
         val body = UpdateAppointmentRequest(status = "canceled")
 
         // 3) call the API
-        RetrofitClientAppointments
-            .appointmentsApi
-            .updateAppointment("Bearer $token", appointmentId, body)
+        appointmentsApiClient.create(context)
+            .updateAppointment(appointmentId, body)
             .enqueue(object : Callback<AppointmentResponse> {
                 override fun onResponse(
                     call: Call<AppointmentResponse>,
@@ -154,8 +153,8 @@ class AppointmentRepository {
                 .getCurrentUser()
                 ?: throw Exception("No user")
 
-            val response = RetrofitClientAppointments.appointmentsApi
-                .getSessionsByPatientId(bearer, user._id)
+            val response = appointmentsApiClient.create(context)
+                .getSessionsByPatientId(user._id)
                 .execute()
 
             if (!response.isSuccessful) {
@@ -202,8 +201,8 @@ class AppointmentRepository {
 
             try {
                 Log.d("AppointmentDebug", "Calling API getSessionsByPatientId")
-                val response = RetrofitClientAppointments.appointmentsApi
-                    .getSessionsByPatientId(bearerToken, user._id)
+                val response = appointmentsApiClient.create(context)
+                    .getSessionsByPatientId( user._id)
                     .execute()
 
                 Log.d("AppointmentDebug", "Response success: ${response.isSuccessful}")

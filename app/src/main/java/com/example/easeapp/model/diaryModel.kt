@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.ease.model.local.AppDatabase
 import com.example.easeapp.model.requests.DiaryApi
-import com.example.easeapp.model.requests.RetrofitClientDiary
 import com.example.easeapp.model.requests.UserApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
 import com.example.ease.ui.activities.MainActivity
+import com.example.easeapp.model.requests.DiaryApiClient
 import kotlinx.coroutines.withContext
 
 // נתוני המודל
@@ -36,7 +36,7 @@ class DiaryRepo(
 private val context: Context
 ) {
     private val api: DiaryApi by lazy {
-        RetrofitClientDiary.create(context).create(DiaryApi::class.java)
+        DiaryApiClient.create(context)
     }
 
     private val db: AppDatabase by lazy {
@@ -55,8 +55,7 @@ private val context: Context
                 authorId = currentUser._id ?: ""
 
             )
-
-            val response = api.addDiary(request, token)
+            val response = api.addDiary(request)
 
             return@withContext if (response.isSuccessful) {
                 response.body()?.message ?: "Success"
@@ -76,7 +75,7 @@ private val context: Context
             if (currentUser == null) return@withContext emptyList()
 
             val token = "Bearer ${currentUser.accessToken?.trim()}"
-            val response = api.getUserDiaries(token, currentUser._id ?: "")
+            val response = api.getUserDiaries( currentUser._id ?: "")
 
             if (response.isSuccessful) {
                 return@withContext response.body() ?: emptyList()
@@ -101,7 +100,7 @@ private val context: Context
                 authorId = currentUser._id ?: ""
             )
 
-            val response = api.updateDiary(token,request._id ?: "", request)
+            val response = api.updateDiary(request._id ?: "", request)
 
             return@withContext if (response.isSuccessful) {
                 response.body()?.message ?: "Success"
@@ -120,7 +119,7 @@ private val context: Context
        val currentUser = db.userDao().getCurrentUser()
          if (currentUser == null) return@withContext "User not found"
         val token = "Bearer ${currentUser.accessToken?.trim()}"
-        val response = api.deleteDiary(token,diaryId)
+        val response = api.deleteDiary(diaryId)
         if (response.isSuccessful) {
             return@withContext response.body()?.message ?: "Success"
         } else {

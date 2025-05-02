@@ -23,8 +23,8 @@ import com.example.ease.ui.activities.MainActivity
 import com.example.ease.viewmodel.AuthViewModel
 import com.example.ease.viewmodel.UserViewModel
 import com.example.easeapp.model.requests.UserApi
-import com.example.easeapp.model.requests.RetrofitClientUser
 import com.example.easeapp.model.requests.UpdateProfileResponse
+import com.example.easeapp.model.requests.UserApiClient
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.coroutines.launch
@@ -176,10 +176,9 @@ class editProfileFragment : Fragment() {
 
                     val authHeader = "Bearer " + currentUser.accessToken?.trim()
 
-                    val userApi: UserApi = RetrofitClientUser.create(requireContext()).create(UserApi::class.java)
+                    val userApi: UserApi = UserApiClient.create(requireContext())
 
                     userApi.updateUserProfile(
-                        token = authHeader,
                         userId = currentUser._id,
                         username = nameBody,
                         phoneNumber = phoneBody,

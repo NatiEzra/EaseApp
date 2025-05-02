@@ -6,9 +6,9 @@ import com.example.ease.model.local.AppDatabase
 import com.example.ease.model.local.UserEntity
 import com.example.ease.repositories.AuthRepository
 import com.example.easeapp.model.requests.AppointmentDetails
-import com.example.easeapp.model.requests.RetrofitClient
-import com.example.easeapp.model.requests.RetrofitClientUser
+import com.example.easeapp.model.requests.AuthApiClient
 import com.example.easeapp.model.requests.UserApi
+import com.example.easeapp.model.requests.UserApiClient
 import com.example.easeapp.model.requests.UserProfileResponse
 import com.example.easeapp.repositories.AppointmentRepository
 import kotlinx.coroutines.CoroutineScope
@@ -46,7 +46,7 @@ class UserRepository(private val context: Context) {
     }
 
     private val userApi: UserApi by lazy {
-        RetrofitClientUser.create(context).create(UserApi::class.java)
+        UserApiClient.create(context)
     }
 
     fun getAllDoctors(context: Context, onComplete: (MutableList<User>) -> Unit) {
@@ -110,7 +110,7 @@ class UserRepository(private val context: Context) {
         onComplete: (Boolean, com.example.easeapp.model.requests.UserDetails?, String?) -> Unit
     ) {
         val authHeader = "Bearer $accessToken"
-        userApi.getUserProfile(authHeader, userId, page).enqueue(object : Callback<com.example.easeapp.model.requests.UserProfileResponse> {
+        userApi.getUserProfile( userId, page).enqueue(object : Callback<com.example.easeapp.model.requests.UserProfileResponse> {
             override fun onResponse(
                 call: Call<com.example.easeapp.model.requests.UserProfileResponse>,
                 response: Response<com.example.easeapp.model.requests.UserProfileResponse>
@@ -141,7 +141,7 @@ class UserRepository(private val context: Context) {
 
         // 2) Enqueue the Retrofit call
         val call: Call<UserProfileResponse> =
-            RetrofitClient.authApi.getUserProfile(bearer, doctorId)
+            AuthApiClient.create(context).getUserProfile( doctorId)
 
         call.enqueue(object : Callback<UserProfileResponse> {
             override fun onResponse(

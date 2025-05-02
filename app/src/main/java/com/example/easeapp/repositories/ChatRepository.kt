@@ -23,7 +23,7 @@ class ChatRepository(private val api: ChatApiService) {
         val db = AppDatabase.getInstance(context)
         val user = db.userDao().getCurrentUser()
         val userId= user?._id
-        val response = api.getChatHistory(token, meetingId)
+        val response = api.getChatHistory(meetingId)
         val chatHistory=parseChatHistory(response.body()!!.history, userId!!, doctorImageUrl)
         return if (response.isSuccessful) {
             chatHistory
