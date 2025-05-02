@@ -20,7 +20,7 @@ import com.example.ease.model.local.AppDatabase
 import com.example.easeapp.model.AppointmentDate
 import com.example.easeapp.model.DisplayableSlot
 import com.example.easeapp.model.requests.AvailableSlotsResponse
-import com.example.easeapp.model.requests.RetrofitClientAppointments
+import com.example.easeapp.model.requests.appointmentsApiClient
 import com.example.easeapp.ui.adapters.DateAdapter
 import com.example.easeapp.ui.adapters.TimeAdapter
 import com.example.easeapp.viewmodel.AppointmentViewModel
@@ -149,31 +149,33 @@ class BookingAppointmentFragment : Fragment() {
     private fun fetchAvailableTimeSlots(doctorId: String?, date: String) {
         if (doctorId == null) return
         var accessToken = getAccessToken(requireContext())?.replace("refreshToken=", "hello, ")?.replace(";", "") ?: return
-        val call = RetrofitClientAppointments.appointmentsApi.getAvailableSlots(accessToken, doctorId, date)
-        call.enqueue(object : Callback<AvailableSlotsResponse> {
-            override fun onResponse(call: Call<AvailableSlotsResponse>, response: Response<AvailableSlotsResponse>) {
-                if (response.isSuccessful) {
-                    val slots = response.body()?.slots ?: emptyList()
-                    val filteredSlots = slots.filter {
-                        try {
-                            Instant.parse(it).isAfter(Instant.now())
-                        } catch (e: Exception) { false }
+        val call = context?.let { appointmentsApiClient.create(it).getAvailableSlots(doctorId, date) }
+        if (call != null) {
+            call.enqueue(object : Callback<AvailableSlotsResponse> {
+                override fun onResponse(call: Call<AvailableSlotsResponse>, response: Response<AvailableSlotsResponse>) {
+                    if (response.isSuccessful) {
+                        val slots = response.body()?.slots ?: emptyList()
+                        val filteredSlots = slots.filter {
+                            try {
+                                Instant.parse(it).isAfter(Instant.now())
+                            } catch (e: Exception) { false }
+                        }
+                        val displayableSlots = filteredSlots.map {
+                            DisplayableSlot(
+                                original = it,
+                                display = formatTime(it)
+                            )
+                        }
+                        timeAdapter.submitList(displayableSlots)
+                    } else {
+                        Log.e("Booking", "Error fetching slots: ${response.code()}")
                     }
-                    val displayableSlots = filteredSlots.map {
-                        DisplayableSlot(
-                            original = it,
-                            display = formatTime(it)
-                        )
-                    }
-                    timeAdapter.submitList(displayableSlots)
-                } else {
-                    Log.e("Booking", "Error fetching slots: ${response.code()}")
                 }
-            }
-            override fun onFailure(call: Call<AvailableSlotsResponse>, t: Throwable) {
-                Log.e("Booking", "Failure: ${t.message}")
-            }
-        })
+                override fun onFailure(call: Call<AvailableSlotsResponse>, t: Throwable) {
+                    Log.e("Booking", "Failure: ${t.message}")
+                }
+            })
+        }
     }
 
     private fun generateDateList() {

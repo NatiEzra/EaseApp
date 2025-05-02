@@ -1,7 +1,8 @@
 package com.example.easeapp.model.requests
 
-import com.example.ease.repositories.RefreshRequest
-import com.example.ease.repositories.RefreshResponse
+import android.content.Context
+
+import com.example.easeapp.model.RetrofitProvider.RetrofitProvider
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -29,20 +30,13 @@ interface AuthApi {
 
     @GET("/api/users/profile")
     fun getUserProfile(
-        @Header("Authorization") token: String,
+        //@Header("Authorization") token: String,
         @Query("userId") userId: String,
     ): Call<UserProfileResponse>
 }
 
-object RetrofitClient {
-    //private const val BASE_URL = "http://192.168.1.105:3000"
-    private const val BASE_URL = "http://10.0.2.2:2999"
-    val authApi: AuthApi by lazy {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        retrofit.create(AuthApi::class.java)
+object AuthApiClient {
+    fun create(context: Context): AuthApi {
+        return RetrofitProvider.provideRetrofit(context).create(AuthApi::class.java)
     }
 }

@@ -1,5 +1,7 @@
 package com.example.easeapp.model.requests
 
+import android.content.Context
+import com.example.easeapp.model.RetrofitProvider.RetrofitProvider
 import com.example.easeapp.model.responses.SessionsByPatientResponse
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -19,39 +21,39 @@ interface AppointmentsApi {
 
     @GET("/api/schedule/{doctorId}/free-slots")
     fun getAvailableSlots(
-        @Header("Authorization") token: String,
+      //  @Header("Authorization") token: String,
         @Path("doctorId") doctorId: String,
         @Query("date") date: String
     ): Call<AvailableSlotsResponse>
 
     @POST("/api/appointments")
     fun createAppointment(
-        @Header("Authorization") token: String,
+       // @Header("Authorization") token: String,
         @Body request: AppointmentRequest
     ): Call<AppointmentResponse>
 
     @GET("/api/schedule/{doctorId}/closest-slot")
     fun getClosestAppointmentByDoctor(
-        @Header("Authorization") token: String,
+      //  @Header("Authorization") token: String,
         @Path("doctorId") doctorId: String
     ): Call<ClosestAppointmentResponse>
 
     @HTTP(method = "DELETE", path = "/api/appointments/{appointmentId}", hasBody = true)
     fun cancelAppointment(
-        @Header("Authorization") token: String,
+       // @Header("Authorization") token: String,
         @Path("appointmentId") appointmentId: String,
         @Body roleBody: RoleRequest
     ): Call<Void>
 
     @GET("/api/patients/{patientId}/sessions")
     fun getSessionsByPatientId(
-        @Header("Authorization") token: String,
+       // @Header("Authorization") token: String,
         @Path("patientId") patientId: String
     ): Call<SessionsByPatientResponse>
 
     @PUT("/api/appointments/{appointmentId}")
     fun updateAppointment(
-        @Header("Authorization") auth: String,
+      //  @Header("Authorization") auth: String,
         @Path("appointmentId") appointmentId: String,
         @Body request: UpdateAppointmentRequest
     ): Call<AppointmentResponse>
@@ -64,15 +66,9 @@ interface AppointmentsApi {
 }
 
 // אובייקט Retrofit
-object RetrofitClientAppointments {
-    //private const val BASE_URL = "http://192.168.1.105:3000"
-    private const val BASE_URL = "http://10.0.2.2:2999"
-    val appointmentsApi: AppointmentsApi by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(AppointmentsApi::class.java)
+object appointmentsApiClient {
+    fun create(context: Context): AppointmentsApi {
+        return RetrofitProvider.provideRetrofit(context).create(AppointmentsApi::class.java)
     }
 }
 

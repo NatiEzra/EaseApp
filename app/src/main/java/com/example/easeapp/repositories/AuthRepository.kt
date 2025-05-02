@@ -2,33 +2,22 @@ package com.example.ease.repositories
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import com.example.ease.model.local.UserEntity
 import com.example.ease.model.local.AppDatabase
+import com.example.easeapp.model.requests.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import com.example.ease.model.UserRepository
-import com.example.easeapp.model.requests.LoginRequest
-import com.example.easeapp.model.requests.LoginResponse
-import com.example.easeapp.model.requests.RegisterResponse
-import com.example.easeapp.model.requests.RetrofitClient
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
-
-data class RefreshRequest(
-    val refreshToken: String
-)
-
-data class RefreshResponse(
-    val accessToken: String,
-    val refreshToken: String
-)
+import com.example.easeapp.model.RetrofitProvider.RetrofitProvider
 
 class AuthRepository {
     companion object {
@@ -51,11 +40,11 @@ class AuthRepository {
         val call = if (imageFile != null) {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val multipartBody = MultipartBody.Part.createFormData("profilePicture", imageFile.name, requestFile)
-            RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, multipartBody)
+            AuthApiClient.create(context).registerUser(usernamePart, emailPart, passwordPart, multipartBody)
         } else {
             val emptyRequestFile = "".toRequestBody("text/plain".toMediaTypeOrNull())
             val emptyPart = MultipartBody.Part.createFormData("profilePicture", "", emptyRequestFile)
-            RetrofitClient.authApi.registerUser(usernamePart, emailPart, passwordPart, emptyPart)
+            AuthApiClient.create(context).registerUser(usernamePart, emailPart, passwordPart, emptyPart)
         }
 
         call.enqueue(object : Callback<RegisterResponse> {
@@ -66,6 +55,7 @@ class AuthRepository {
                     onComplete(false, response.errorBody()?.string() ?: "Unknown error")
                 }
             }
+
             override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
                 onComplete(false, t.message ?: "Network error")
             }
@@ -87,104 +77,94 @@ class AuthRepository {
         onComplete: (Boolean, String?, Any?) -> Unit
     ) {
         val request = LoginRequest(email, password)
-        RetrofitClient.authApi.login(request).enqueue(object : Callback<LoginResponse> {
-            var callbackCalled = false
-
+        AuthApiClient.create(context).login(request).enqueue(object : Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (response.isSuccessful && response.body() != null) {
-                    val setCookieHeaders = response.headers()["Set-Cookie"]
-                    setCookieHeaders?.let {
-                        saveRefreshTokenLocally(context, it)
-                        saveAccessTokenLocally(context, it)
-                    }
                     val loginResponse = response.body()!!
-                    val accessToken = loginResponse.accessToken
-                    if (accessToken.isNotEmpty()) {
-                        val userEntity = UserEntity(
-                            _id = loginResponse._id,
-                            email = loginResponse.email,
-                            name = loginResponse.username,
-                            profileImageUrl = loginResponse.profilePicture,
-                            accessToken = accessToken,
-                            phoneNumber = loginResponse.phoneNumber,
-                            dateOfBirth = loginResponse.dateOfBirth,
-                            gender = loginResponse.gender
-                        )
-                        GlobalScope.launch {
-                            AppDatabase.getInstance(context).userDao().insert(userEntity)
-                        }
-                        if (!callbackCalled) {
-                            onComplete(true, null, loginResponse)
-                            callbackCalled = true
-                        }
-                        return
-                    } else {
-                        if (!callbackCalled) {
-                            onComplete(false, "Invalid login response", null)
-                            callbackCalled = true
-                        }
+
+                    // שמירה של הטוקנים (access ו-refresh) מתוך הגוף של התשובה
+                    saveAccessToken(context, loginResponse.accessToken)
+                    saveRefreshToken(context, loginResponse.refreshToken)
+
+                    val userEntity = UserEntity(
+                        _id = loginResponse._id,
+                        email = loginResponse.email,
+                        name = loginResponse.username,
+                        profileImageUrl = loginResponse.profilePicture,
+                        accessToken = loginResponse.accessToken,
+                        phoneNumber = loginResponse.phoneNumber,
+                        dateOfBirth = loginResponse.dateOfBirth,
+                        gender = loginResponse.gender
+                    )
+
+                    GlobalScope.launch {
+                        AppDatabase.getInstance(context).userDao().insert(userEntity)
                     }
+
+                    onComplete(true, null, loginResponse)
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    if (!callbackCalled) {
-                        onComplete(false, errorBody ?: "Login failed", null)
-                        callbackCalled = true
-                    }
+                    onComplete(false, errorBody ?: "Login failed", null)
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                if (!callbackCalled) {
-                    onComplete(false, t.message ?: "Network error", null)
-                    callbackCalled = true
-                }
+                onComplete(false, t.message ?: "Network error", null)
             }
         })
     }
 
-    fun saveRefreshTokenLocally(context: Context, cookie: String) {
+    // שמירת טוקנים (גוף רגיל - לא Set-Cookie)
+    fun saveAccessToken(context: Context, token: String) {
         val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putString("refresh_token_cookie", cookie).apply()
+        prefs.edit().putString("access_token", token).apply()
     }
 
-    fun saveAccessTokenLocally(context: Context, cookie: String) {
+    fun saveRefreshToken(context: Context, token: String) {
         val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
-        prefs.edit().putString("access_token_cookie", cookie).apply()
-    }
-
-    fun getRefreshToken(context: Context): String? {
-        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
-        return prefs.getString("refresh_token_cookie", null)
+        prefs.edit().putString("refresh_token", token).apply()
     }
 
     fun getAccessToken(context: Context): String? {
         val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
-        return prefs.getString("access_token_cookie", null)
+        return prefs.getString("access_token", null)
+    }
+
+    fun getRefreshToken(context: Context): String? {
+        val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("refresh_token", null)
     }
 
     fun signOut(context: Context, onComplete: (Boolean, String?) -> Unit) {
         val prefs = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
-        prefs.edit().remove("access_token_cookie").remove("refresh_token_cookie").apply()
+        prefs.edit().remove("access_token").remove("refresh_token").apply()
         onComplete(true, null)
     }
 
-    fun isUserLoggedIn(context: Context): Boolean = getAccessToken(context) != null
+    fun isUserLoggedIn(context: Context): Boolean {
+        return getAccessToken(context) != null
+    }
 
     suspend fun refreshAccessToken(context: Context): String {
         val refreshToken = getRefreshToken(context) ?: return ""
-        return try {
-            val call = RetrofitClient.authApi.refreshToken(RefreshRequest(refreshToken))
-            val response = call.execute()
-            if (response.isSuccessful && response.body() != null) {
-                val newAccessToken = response.body()!!.accessToken
-                saveAccessTokenLocally(context, newAccessToken)
-                newAccessToken
+
+        try {
+            val retrofit = RetrofitProvider.provideRetrofit(context)
+
+
+            val userApi = retrofit.create(UserApi::class.java)
+            val response = userApi.refreshToken(RefreshRequest(refreshToken)).execute()
+
+            return if (response.isSuccessful) {
+                val newToken = response.body()?.accessToken ?: ""
+                saveAccessToken(context, newToken)
+                newToken
             } else {
                 ""
             }
         } catch (e: Exception) {
-            ""
+            e.printStackTrace()
+            return ""
         }
     }
-
 }

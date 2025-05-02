@@ -8,7 +8,7 @@ import retrofit2.Response
 interface ChatApiService {
     @GET("/api/meetings/{meetingId}/history")
     suspend fun getChatHistory(
-        @Header("Authorization") token: String,
+       // @Header("Authorization") token: String,
         @Path("meetingId") meetingId: String): Response<MeetingHistoryResponse>
 
 }
