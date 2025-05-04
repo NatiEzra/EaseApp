@@ -27,6 +27,7 @@ class MyMeetingFragment : Fragment() {
     private lateinit var doctorImage: ImageView
     private lateinit var btnChange: Button
     private lateinit var btnCancel: Button
+    private lateinit var btnApprove: Button
     private lateinit var btnScheduleNew: Button
     private lateinit var meetingLayout: View
     private lateinit var emptyLayout: View
@@ -44,6 +45,7 @@ class MyMeetingFragment : Fragment() {
         doctorImage = view.findViewById(R.id.doctorImage)
         btnChange = view.findViewById(R.id.changeTimeButton)
         btnCancel = view.findViewById(R.id.cancelMeetingButton)
+        btnApprove = view.findViewById(R.id.approveMeetingButton)
         btnScheduleNew = view.findViewById(R.id.scheduleNewMeetingButton)
         meetingLayout = view.findViewById(R.id.meetingCardLayout)
         emptyLayout = view.findViewById(R.id.emptyLayout)
@@ -61,7 +63,7 @@ class MyMeetingFragment : Fragment() {
             try {
                 val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
                 val appointment = appointments?.firstOrNull { appt ->
-                    appt.status == "confirmed"
+                    (appt.status == "confirmed" && appt.isEmergency == false)
                             || (appt.status == "pending" && appt.isEmergency == false)
                 }
                 if (appointment != null) {
@@ -81,6 +83,11 @@ class MyMeetingFragment : Fragment() {
         emptyLayout.visibility = View.GONE
         btnChange.visibility = View.VISIBLE
         btnCancel.visibility = View.VISIBLE
+        if (appointment.status == "pending") {
+            btnApprove.visibility = View.VISIBLE
+        } else {
+            btnApprove.visibility = View.GONE
+        }
 
         doctorNameText.text = appointment.doctorName ?: "Unknown Doctor"
 
@@ -110,6 +117,38 @@ class MyMeetingFragment : Fragment() {
                     Toast.makeText(requireContext(), message ?: "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+        btnApprove.setOnClickListener{
+            val dialogView = layoutInflater.inflate(R.layout.dialog_emergency_confirm, null)
+
+            dialogView.findViewById<TextView>(R.id.textAreYouSure).text = "Are you sure you want to approve this appointment?"
+            dialogView.findViewById<Button>(R.id.btnStartEmergency).text = "Approve my appointment"
+
+            val dialog = android.app.AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create()
+
+            val confirmButton = dialogView.findViewById<Button>(R.id.btnStartEmergency)
+            val cancelButton = dialogView.findViewById<Button>(R.id.btnCancel)
+
+            confirmButton.setOnClickListener {
+                AppointmentRepository.shared.approveAppointment(requireContext(), appointment._id) { success, message ->
+                    if (success) {
+                        displayNoAppointment()
+                        Toast.makeText(requireContext(), "Meeting approved", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(requireContext(), message ?: "Failed to approve meeting", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                dialog.dismiss()
+            }
+
+            cancelButton.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.show()
         }
 
 
@@ -152,6 +191,7 @@ class MyMeetingFragment : Fragment() {
         emptyLayout.visibility = View.VISIBLE
         btnCancel.visibility = View.GONE
         btnChange.visibility = View.GONE
+        btnApprove.visibility = View.GONE
         btnScheduleNew.visibility = View.VISIBLE
 
         val emptyText = emptyLayout.findViewById<TextView>(R.id.emptyMessage)
