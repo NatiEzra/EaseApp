@@ -29,6 +29,7 @@
             android:layout_marginBottom="8dp" />
 
         <!-- Horizontal Date Picker -->
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/dateRecyclerView"
             android:layout_width="match_parent"

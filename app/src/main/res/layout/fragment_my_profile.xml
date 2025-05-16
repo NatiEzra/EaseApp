@@ -6,15 +6,6 @@
     android:background="#FFFFFF"
     tools:context=".ProfileFragment">
 
-    <!-- צורה כחולה ברקע -->
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="270dp"
-        android:layout_height="238dp"
-        android:layout_gravity="top|start"
-        android:src="@drawable/blue_shape_template"
-        android:scaleType="fitXY" />
-
     <!-- תוכן המסך -->
     <ScrollView
         android:layout_width="match_parent"
@@ -163,23 +154,24 @@
                 android:background="@drawable/profile_input_bg" />
 
             <!-- כפתור עריכה -->
+
+            <!-- כפתור Logout -->
             <Button
                 android:id="@+id/editButton"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="#AED6F1"
                 android:text="Edit"
-                android:textColor="#FFFFFF"
                 android:textAllCaps="false"
-                android:textSize="16sp"
-                android:background="@drawable/profile_edit_button_bg"
-                android:layout_marginBottom="12dp" />
+                android:textColor="@color/black"
+                android:textSize="16sp" />
 
-            <!-- כפתור Logout -->
             <Button
                 android:id="@+id/logoutButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="52dp"
+                android:layout_marginTop="1dp"
                 android:layout_marginBottom="16dp"
                 android:backgroundTint="#FADBD8"
                 android:drawableLeft="@drawable/logout"

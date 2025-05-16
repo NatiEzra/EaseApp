@@ -24,8 +24,8 @@
 
         <ImageView
             android:id="@+id/doctorImage"
-            android:layout_width="43dp"
-            android:layout_height="41dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             app:srcCompat="@drawable/account" />
 
         <LinearLayout
@@ -40,22 +40,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Dr. Name"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:layout_marginTop="10dp"
+                android:layout_marginLeft="10dp"
+                />
 
-            <TextView
-                android:id="@+id/doctorExperience"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="7 Years experience"
-                android:textSize="14sp"
-                android:textColor="#555" />
 
         </LinearLayout>
 
         <ImageView
             android:id="@+id/doctor_star"
-            android:layout_width="49dp"
+            android:layout_width="24dp"
             android:layout_height="47dp"
             app:srcCompat="@drawable/star_outline" />
 

@@ -33,7 +33,7 @@ class DoctorsViewHolder(
 ) : RecyclerView.ViewHolder(itemView) {
 
     private val doctorNameTextView: TextView = itemView.findViewById(R.id.doctorName)
-    private val closestSlotTextView: TextView = itemView.findViewById(R.id.doctorExperience)
+//    private val closestSlotTextView: TextView = itemView.findViewById(R.id.doctorExperience)
     private val doctorImageView: ImageView = itemView.findViewById(R.id.doctorImage)
     private val bookButton: Button = itemView.findViewById(R.id.bookNowBtn)
     private val doctorStar: ImageView = itemView.findViewById(R.id.doctor_star)
@@ -44,15 +44,15 @@ class DoctorsViewHolder(
 
 
     fun bind(doctor: User) {
-        closestSlotTextView.text = "Loading..."
-        val appointment= AppointmentRepository.shared
-        appointment.getClosestAppointment(itemView.context, doctor._id) { success, date, error ->
-            if (success && date != null) {
-                closestSlotTextView.text = "Closest appointment: " + date
-            } else {
-                closestSlotTextView.text = error ?: "An error occurred"
-            }
-        }
+        //closestSlotTextView.text = "Loading..."
+//        val appointment= AppointmentRepository.shared
+//        appointment.getClosestAppointment(itemView.context, doctor._id) { success, date, error ->
+////            if (success && date != null) {
+////              //  closestSlotTextView.text = "Closest appointment: " + date
+////            } else {
+////             //   closestSlotTextView.text = error ?: "An error occurred"
+////            }
+       // }
 
         doctorNameTextView.text = doctor.username
 
