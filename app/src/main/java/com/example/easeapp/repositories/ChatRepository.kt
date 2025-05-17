@@ -24,6 +24,9 @@ class ChatRepository(private val api: ChatApiService) {
         val user = db.userDao().getCurrentUser()
         val userId= user?._id
         val response = api.getChatHistory(meetingId)
+        if( response.body() == null) {
+            throw Exception("Error fetching chat history: ${response.errorBody()?.string() ?: "Unknown error"}")
+        }
         val chatHistory=parseChatHistory(response.body()!!.history, userId!!, doctorImageUrl)
         return if (response.isSuccessful) {
             chatHistory

@@ -31,9 +31,7 @@ class AppointmentRepository {
         val body = UpdateAppointmentRequest(status = "confirmed")
 
         // 3) call the API
-        RetrofitClientAppointments
-            .appointmentsApi
-            .updateAppointment("Bearer $token", appointmentId, body)
+        appointmentsApiClient.create(context).updateAppointment(appointmentId, body)
             .enqueue(object : Callback<AppointmentResponse> {
                 override fun onResponse(
                     call: Call<AppointmentResponse>,
