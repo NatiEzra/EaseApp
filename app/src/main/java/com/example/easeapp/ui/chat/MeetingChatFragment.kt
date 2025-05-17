@@ -62,9 +62,9 @@ class MeetingChatFragment : Fragment() {
                 val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
 
                 val appointment = appointments?.firstOrNull { appt ->
-                    appt.status == "confirmed" || (appt.status == "pending" && !appt.isEmergency)
+                    appt.status == "confirmed" || (appt.status == "pending" && appt.isEmergency)
                 }
-                if (appointment == null || appointment.status != "confirmed") {
+                if (appointment == null) {
                     showBlockedChatDialog("You cannot access the chat because the appointment is not active.")
                     return@launch
                 }

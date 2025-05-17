@@ -31,7 +31,7 @@ class ChatRoutineFragment : Fragment() {
             lifecycleScope.launch {
                 try {
                     val appointment = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
-                    if (appointment != null) {
+                    if (appointment != null && appointment.size != 0) {
                         val action = ChatRoutineFragmentDirections.actionRoutineFragmentToMyMeetingFragment()
                         findNavController().navigate(action)
                     } else {

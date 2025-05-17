@@ -55,8 +55,12 @@ class DoctorsViewHolder(
        // }
 
         doctorNameTextView.text = doctor.username
-
-        doctorStar.visibility= if (doctor.isLastDoctor!!) View.VISIBLE else View.GONE
+        if (doctor.isLastDoctor==null || doctor.isLastDoctor==false) {
+            doctorStar.visibility= View.GONE
+        }
+        else{
+            doctorStar.visibility= View.VISIBLE
+        }
         getClosestAppointment(itemView.context, doctor._id)
 
         val profilePicture = fixImageUrl(doctor.profilePicture)

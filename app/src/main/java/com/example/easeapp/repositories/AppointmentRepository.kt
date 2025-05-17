@@ -22,6 +22,35 @@ class AppointmentRepository {
     companion object {
         val shared = AppointmentRepository()
     }
+    fun approveAppointment( context: Context, appointmentId: String, onComplete: (Boolean, String?) -> Unit){
+        var token = AuthRepository.shared.getAccessToken(context) ?: return onComplete(false, "No token found")
+
+        token = token.replace("refreshToken=", "")
+        token = token.replace(";", "")
+
+        val body = UpdateAppointmentRequest(status = "confirmed")
+
+        // 3) call the API
+        RetrofitClientAppointments
+            .appointmentsApi
+            .updateAppointment("Bearer $token", appointmentId, body)
+            .enqueue(object : Callback<AppointmentResponse> {
+                override fun onResponse(
+                    call: Call<AppointmentResponse>,
+                    response: Response<AppointmentResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        onComplete(true, response.body()?.appointment?._id)
+                    } else {
+                        onComplete(false, null)
+                    }
+                }
+
+                override fun onFailure(call: Call<AppointmentResponse>, t: Throwable) {
+                    onComplete(false, t.message)
+                }
+            })
+    }
 
 
 
@@ -166,9 +195,10 @@ class AppointmentRepository {
             // 3) Sequentially await each doctor‐profile load:
             for (session in sessions) {
                 // this suspend‐call will block this coroutine until the callback resumes
+                val doctorId= session.doctorId ?:continue;
                 val profile = UserRepository
                     .getInstance(context)
-                    .fetchUserProfile(context, session.doctorId!!)
+                    .fetchUserProfile(context, doctorId)
                 session.doctorName = profile.user.username
             }
             val details = mutableListOf<AppointmentDetails>()
