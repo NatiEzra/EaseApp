@@ -68,11 +68,11 @@ class MeetingChatFragment : Fragment() {
                     showBlockedChatDialog("You cannot access the chat because the appointment is not active.")
                     return@launch
                 }
-
+/*
                 val apiService = Retrofit.Builder()
                     //.baseUrl("http://192.168.1.105:3000/")
-                    .baseUrl("http://10.0.2.2:2999/")
-                    //.baseUrl("http://10.0.2.2:3000/")
+                    //.baseUrl("http://10.0.2.2:2999/")
+                    .baseUrl("http://10.0.2.2:3000/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(ChatApiService::class.java)
@@ -85,7 +85,13 @@ class MeetingChatFragment : Fragment() {
                     appointment.doctorId ?: "",
                     requireContext()
                 )
+*/
+                val chatRepo = ChatRepository(requireContext())
 
+                val historyMessages = chatRepo.fetchChatHistory(
+                    meetingId       = args.appointmentId,
+                    doctorImageUrl  = appointment.doctorId
+                )
                 doctorNameTextView.text = appointment.doctorName
 
                 messages.addAll(historyMessages)
@@ -114,15 +120,34 @@ class MeetingChatFragment : Fragment() {
     }
 
     private fun connectSocket() {
+        // ── get the current access-token you store in AuthRepository ──
+        val token = com.example.ease.repositories.AuthRepository
+            .shared.getAccessToken(requireContext())
+
         val opts = IO.Options().apply {
-            forceNew = true
+            forceNew     = true
             reconnection = true
+            query        = "token=$token"   // 👈 token goes in the handshake
+            // If you prefer an HTTP header instead:
+            // extraHeaders = mapOf("Authorization" to listOf("Bearer $token"))
         }
 
-        //socket = IO.socket("http://192.168.1.105:3000", opts)
-        socket = IO.socket("http://10.0.2.2:2999", opts)
-        //socket = IO.socket("http://10.0.2.2:3000", opts)
+        socket = IO.socket("http://10.0.2.2:3000", opts)
 
+        // ── if the server emits “unauthorized”, refresh & reconnect ──
+        socket.on("unauthorized") {
+            lifecycleScope.launch {
+                val newToken = com.example.ease.repositories.AuthRepository
+                    .shared.refreshAccessToken(requireContext())
+
+                if (newToken.isNotEmpty()) {
+                    socket.disconnect()
+                    connectSocket()   // reconnect with fresh token (query updated)
+                } else {
+                    showBlockedChatDialog("Session expired. Please log in again.")
+                }
+            }
+        }
 
         socket.on(Socket.EVENT_CONNECT) {
             val joinData = JSONObject().apply {
@@ -176,7 +201,7 @@ class MeetingChatFragment : Fragment() {
 
         val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Session Ended")
-            .setMessage(summary)
+            .setMessage("The consultation has ended. You can no longer send messages.")
             .setCancelable(false)
             .setPositiveButton("OK") { _, _ ->
                 requireActivity().onBackPressedDispatcher.onBackPressed()

@@ -9,31 +9,28 @@ import java.time.format.DateTimeFormatter
 import java.time.Instant
 import java.time.format.DateTimeParseException
 
-class ChatRepository(private val api: ChatApiService) {
+class ChatRepository(context: Context) {
+    private val api: ChatApiService = ChatApiClient.create(context)
 
+    private val db: AppDatabase = AppDatabase.getInstance(context)
     suspend fun fetchChatHistory(
         meetingId: String,
-        currentUserId: String,
-        doctorImageUrl: String?,
-        context: Context,
+        doctorImageUrl: String? = null
     ): List<ChatMessage> {
-        var token = AuthRepository.shared.getAccessToken(context)
-        token = token!!.replace("refreshToken=", "hello ")
-        token = token.replace(";", "")
-        val db = AppDatabase.getInstance(context)
-        val user = db.userDao().getCurrentUser()
-        val userId= user?._id
+        val currentUserId = db.userDao().getCurrentUser()?._id
+            ?: throw IllegalStateException("User not found")
+
         val response = api.getChatHistory(meetingId)
-        if( response.body() == null) {
-            throw Exception("Error fetching chat history: ${response.errorBody()?.string() ?: "Unknown error"}")
-        }
-        val chatHistory=parseChatHistory(response.body()!!.history, userId!!, doctorImageUrl)
-        return if (response.isSuccessful) {
-            chatHistory
-        } else {
-            throw Exception("Error fetching chat history: ${response.errorBody()?.string() ?: "Unknown error"}")
+
+        if (!response.isSuccessful || response.body() == null) {
+            throw Exception(
+                "Error fetching chat history: " +
+                        (response.errorBody()?.string() ?: "Unknown error")
+            )
         }
 
+        val historyString = response.body()!!.history
+        return parseChatHistory(historyString, currentUserId, doctorImageUrl)
     }
 
     fun parseChatHistory(
