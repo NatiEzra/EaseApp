@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -30,6 +31,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.example.ease.model.UserRepository
 
 class MeetingChatFragment : Fragment() {
 
@@ -59,12 +61,14 @@ class MeetingChatFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
+                val thisAppointmentId = args.appointmentId
+
                 val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
 
                 val appointment = appointments?.firstOrNull { appt ->
-                    appt.status == "confirmed" || (appt.status == "pending" && appt.isEmergency)
+                    appt._id == thisAppointmentId
                 }
-                if (appointment == null) {
+                if (appointment == null || appointment.status != "confirmed"&& !appointment.isEmergency) {
                     showBlockedChatDialog("You cannot access the chat because the appointment is not active.")
                     return@launch
                 }
@@ -92,7 +96,10 @@ class MeetingChatFragment : Fragment() {
                     meetingId       = args.appointmentId,
                     doctorImageUrl  = appointment.doctorId
                 )
-                doctorNameTextView.text = appointment.doctorName
+                if (appointment.doctorName!=null){
+                    doctorNameTextView.text = appointment.doctorName
+                }
+
 
                 messages.addAll(historyMessages)
                 adapter.notifyDataSetChanged()
@@ -101,7 +108,8 @@ class MeetingChatFragment : Fragment() {
                 connectSocket()
             } catch (e: Exception) {
                 Log.e("Chat", "Error fetching appointment or history: ${e.message}")
-                showBlockedChatDialog("An error occurred while loading the chat.")
+                if (e.message!="Job was cancelled")
+                    showBlockedChatDialog("An error occurred while loading the chat.")
             }
         }
 
@@ -132,7 +140,7 @@ class MeetingChatFragment : Fragment() {
             // extraHeaders = mapOf("Authorization" to listOf("Bearer $token"))
         }
 
-        socket = IO.socket("http://10.0.2.2:3000", opts)
+        socket = IO.socket("http://10.0.2.2:2999", opts)
 
         // ── if the server emits “unauthorized”, refresh & reconnect ──
         socket.on("unauthorized") {
@@ -146,6 +154,34 @@ class MeetingChatFragment : Fragment() {
                 } else {
                     showBlockedChatDialog("Session expired. Please log in again.")
                 }
+            }
+        }
+
+        socket.on("userJoined") { args ->
+            val data = args.getOrNull(0) as? JSONObject ?: return@on
+            val joinedUserId = data.optString("userId")
+            UserRepository.getInstance(requireContext()).getUser("", joinedUserId){success, userDetails, errorMessage ->
+                if (success && userDetails != null) {
+                    if (userDetails.role == "doctor") {
+                        activity?.runOnUiThread {
+                            Toast.makeText(
+                                requireContext(),
+                                "Your doctor has joined the chat!",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            val doctorImageView = view?.findViewById<ImageView>(R.id.doctorImage)
+                            val doctorNameTextView = view?.findViewById<TextView>(R.id.doctorName)
+                            if (doctorNameTextView!= null && doctorImageView != null) {
+                                Picasso.get().load(userDetails.profilePicture).into(doctorImageView)
+                                doctorNameTextView.text = userDetails.username
+                            }
+
+                        }
+
+                    }
+
+                }
+
             }
         }
 

@@ -211,6 +211,12 @@ class AppointmentRepository {
         }
     }
 
+    suspend fun getAppointmentDetails(
+        appointmentId: String
+    ){
+
+    }
+
     suspend fun getAllMyMeetings(context: Context): List<AppointmentDetails>? {
         return withContext(Dispatchers.IO) {
             var token = AuthRepository.shared.getAccessToken(context)

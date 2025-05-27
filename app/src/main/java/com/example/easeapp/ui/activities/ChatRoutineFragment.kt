@@ -30,8 +30,9 @@ class ChatRoutineFragment : Fragment() {
         btnSchedule.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    val appointment = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
-                    if (appointment != null && appointment.size != 0) {
+                    val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
+                    val appointment = appointments?.find { (it.status == "confirmed" || it.status == "pending" )&& !it.isEmergency }
+                    if (appointment != null) {
                         val action = ChatRoutineFragmentDirections.actionRoutineFragmentToMyMeetingFragment()
                         findNavController().navigate(action)
                     } else {

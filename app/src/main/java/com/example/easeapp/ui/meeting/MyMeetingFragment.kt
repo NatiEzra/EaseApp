@@ -135,7 +135,7 @@ class MyMeetingFragment : Fragment() {
             confirmButton.setOnClickListener {
                 AppointmentRepository.shared.approveAppointment(requireContext(), appointment._id) { success, message ->
                     if (success) {
-                        displayNoAppointment()
+                        btnApprove.visibility = View.GONE
                         Toast.makeText(requireContext(), "Meeting approved", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(requireContext(), message ?: "Failed to approve meeting", Toast.LENGTH_SHORT).show()

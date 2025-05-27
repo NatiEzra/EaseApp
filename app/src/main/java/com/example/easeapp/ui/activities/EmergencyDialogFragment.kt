@@ -83,7 +83,7 @@ class EmergencyDialogFragment : DialogFragment() {
                             .actionRoutineFragmentToMeetingChatFragment(details._id)
                         fragment.findNavController().navigate(action)
                         // 5) Now that we’ve navigated, dismiss the dialog
-                        dialog.dismiss()
+                        this@EmergencyDialogFragment.dismiss()
                     }
                 }
             }

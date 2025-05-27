@@ -58,6 +58,12 @@ interface AppointmentsApi {
         @Body request: UpdateAppointmentRequest
     ): Call<AppointmentResponse>
 
+    @GET("/api/appointments/{appointmentId}")
+    fun getAppointmentDetails(
+        @Header("Authorization") token: String,
+        @Path("appointmentId") appointmentId: String
+    ): Call<AppointmentResponse>
+
 
 
 
