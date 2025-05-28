@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/homePageFragment">
 
@@ -18,7 +19,11 @@
         android:name="com.example.ease.ui.auth.loginFragment"
         android:label="Login" />
 
-
+    <fragment
+        android:id="@+id/privacyFragment"
+        android:name="com.example.ease.ui.activities.PrivacyFragment"
+        android:label="Privacy"
+        tools:layout="@layout/fragment_privacy" />
 
     <fragment
         android:id="@+id/registerFragment"

@@ -7,19 +7,25 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import com.example.ease.viewmodel.AuthViewModel
+
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import com.example.ease.R
+import com.example.ease.base.MyApplication.Globals.context
 import com.example.ease.model.local.AppDatabase
 import com.example.ease.model.local.UserEntity
 import com.example.ease.viewmodel.UserViewModel
@@ -30,8 +36,11 @@ import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    val autViewModel: AuthViewModel by lazy { ViewModelProvider(this)[AuthViewModel::class.java] }
 
     private lateinit var navController: NavController
     private lateinit var drawerLayout: DrawerLayout
@@ -105,13 +114,32 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.nav_home -> navController.navigate(R.id.homePageFragment)
             R.id.nav_profile -> navController.navigate(R.id.myProfileFragment)
-            R.id.nav_privacy -> {
-                // TODO: navController.navigate(R.id.privacyFragment)
+            R.id.nav_privacy -> navController.navigate(R.id.privacyFragment)
+
+            R.id.nav_logout -> {
+                drawerLayout.closeDrawers()          // close the drawer immediately
+
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) {
+                        AppDatabase.getInstance(this@MainActivity)
+                            .userDao()
+                            .clear()
+                    }
+
+                    SocketManager.disconnect()
+
+                    autViewModel.signOut(this@MainActivity)
+
+                    Toast.makeText(
+                        this@MainActivity,
+                        "You logged out, have a great day!",
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    navigateToLogin()
+                }
             }
 
-            R.id.nav_about -> {
-                // TODO: navController.navigate(R.id.aboutFragment)
-            }
         }
         drawerLayout.closeDrawers()
         return true

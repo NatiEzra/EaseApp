@@ -21,5 +21,9 @@
             android:id="@+id/nav_about"
             android:icon="@drawable/about_us_icon"
             android:title="About us" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/logout"
+            android:title="Logout" />
     </group>
 </menu>
