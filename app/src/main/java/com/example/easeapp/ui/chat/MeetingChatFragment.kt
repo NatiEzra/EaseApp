@@ -140,7 +140,7 @@ class MeetingChatFragment : Fragment() {
             // extraHeaders = mapOf("Authorization" to listOf("Bearer $token"))
         }
 
-        socket = IO.socket("http://10.0.2.2:2999", opts)
+        socket = IO.socket("http://10.0.2.2:3000", opts)
 
         // ── if the server emits “unauthorized”, refresh & reconnect ──
         socket.on("unauthorized") {
