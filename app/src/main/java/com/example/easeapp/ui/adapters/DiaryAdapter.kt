@@ -12,6 +12,7 @@ import com.example.ease.R
 import com.example.easeapp.model.DiaryModel
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.TimeZone
 
 class DiaryAdapter(
     private val onDeleteClick: (DiaryModel) -> Unit,
@@ -21,11 +22,17 @@ class DiaryAdapter(
     inner class DiaryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val diaryText: TextView = itemView.findViewById(R.id.textDiary)
         private val diaryDate: TextView = itemView.findViewById(R.id.dateTextDiary)
-        val dateFormat = SimpleDateFormat("EEEE, yyyy-MM-dd HH:mm", Locale.getDefault())
         private val deleteBtn: ImageView = itemView.findViewById(R.id.deleteDiaryIcon)
         private val editBtn: ImageView = itemView.findViewById(R.id.editDiaryIcon)
+        private val dateFormat = SimpleDateFormat(
+            "EEEE, yyyy-MM-dd HH:mm",
+            Locale.ENGLISH
+        ).apply {
+            timeZone = TimeZone.getTimeZone("Asia/Jerusalem")
+        }
 
         fun bind(item: DiaryModel) {
+
             diaryText.text = item.context
             diaryDate.text = dateFormat.format(item.date)
             deleteBtn.setOnClickListener {
