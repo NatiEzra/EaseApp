@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    android:layoutDirection="ltr"> <!-- מגדיר שהכיוון תמיד LTR -->
+    android:layoutDirection="ltr">
 
 
     <!-- App Logo and Name -->
@@ -35,9 +35,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:fontFamily="sans-serif-medium"
+        android:gravity="start"
         android:text="Register"
         android:textAlignment="viewStart"
-        android:gravity="start"
         android:textColor="#000000"
         android:textSize="28sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -105,13 +105,13 @@
         android:layout_marginEnd="32dp"
         android:drawableLeft="@drawable/email"
         android:drawablePadding="8dp"
+        android:gravity="start"
         android:hint="Enter your email"
+        android:inputType="textEmailAddress"
         android:padding="12dp"
         android:textAlignment="viewStart"
-        android:gravity="start"
-        android:inputType="textEmailAddress"
-        android:textColorHint="#808080"
         android:textColor="#000000"
+        android:textColorHint="#808080"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/username_field" />
@@ -126,13 +126,13 @@
         android:layout_marginEnd="32dp"
         android:drawableLeft="@drawable/lock"
         android:drawablePadding="8dp"
+        android:gravity="start"
         android:hint="Enter password"
         android:inputType="textPassword"
         android:padding="12dp"
         android:textAlignment="viewStart"
-        android:gravity="start"
-        android:textColorHint="#808080"
         android:textColor="#000000"
+        android:textColorHint="#808080"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/email_field" />
@@ -147,16 +147,48 @@
         android:layout_marginEnd="32dp"
         android:drawableLeft="@drawable/lock"
         android:drawablePadding="8dp"
+        android:gravity="start"
         android:hint="Enter confirm password"
         android:inputType="textPassword"
         android:padding="12dp"
         android:textAlignment="viewStart"
-        android:gravity="start"
-        android:textColorHint="#808080"
         android:textColor="#000000"
+        android:textColorHint="#808080"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/password_field" />
+
+    <CheckBox
+        android:id="@+id/privacy_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="32dp"
+        android:layout_marginTop="10dp"
+        android:buttonTint="#82D6ED"
+        android:gravity="start"
+        android:text="I agree to the "
+        android:textAlignment="viewStart"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/navigation_buttons"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/confirm_password_field" />
+
+    <TextView
+        android:id="@+id/privacy_text"
+        android:layout_width="141dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="10dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="privacy policy"
+        android:textColor="#82D6ED"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@id/privacy_checkbox"
+        app:layout_constraintStart_toEndOf="@id/privacy_checkbox"
+        app:layout_constraintTop_toBottomOf="@id/confirm_password_field" />
 
     <!-- Navigation Buttons -->
     <LinearLayout
@@ -200,11 +232,11 @@
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:indeterminate="true"
-        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

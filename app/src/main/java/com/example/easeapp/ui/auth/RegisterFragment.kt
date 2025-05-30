@@ -25,6 +25,7 @@ import com.example.ease.repositories.AuthRepository
 import com.example.ease.model.User
 import com.example.ease.viewmodel.AuthViewModel
 import com.example.ease.viewmodel.UserViewModel
+import com.example.easeapp.ui.activities.PrivacyPolicyDialogFragment
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
 
@@ -145,11 +146,16 @@ class RegisterFragment : Fragment() {
             }
             builder.show()
         }
+        val privacyText= view?.findViewById<TextView>(R.id.privacy_text)
+        privacyText?.setOnClickListener {
+            PrivacyPolicyDialogFragment().show(parentFragmentManager, "PrivacyPolicyDialog")
+        }
         registerButton.setOnClickListener {
 
             val email = emailField.text.toString()
             val password = passwordField.text.toString()
             val confirmPassword = confirmPasswordField.text.toString()
+            val privacyPolicyCheckbox = view?.findViewById<androidx.appcompat.widget.AppCompatCheckBox>(R.id.privacy_checkbox)
             val username = name.text.toString()
             val bitmap: Bitmap?
             val progressBar = view?.findViewById<ProgressBar>(R.id.registerProgressBar)
@@ -160,7 +166,12 @@ class RegisterFragment : Fragment() {
             else{
                 bitmap= null
             }
-
+            if (privacyPolicyCheckbox != null) {
+                if (!privacyPolicyCheckbox.isChecked) {
+                    Toast.makeText(context, "You must agree to the Privacy Policy", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            }
             if (password != confirmPassword) {
                 Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener

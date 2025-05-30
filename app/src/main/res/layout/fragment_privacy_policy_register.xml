@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FFFFFF"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Confidentiality &amp; Data-Privacy Statement"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:paddingBottom="12dp"/>
+
+        <!-- 1. Who We Are -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1.  Who We Are"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="EaseApp (“we”, “our”, “the Service”) provides digital tools that help mental-health professionals support patients living with Post-Trauma, Anxiety and related conditions."/>
+
+        <!-- 2. What We Collect -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="2.  What We Collect"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="• Diary Entries (free-text) – NLP analysis &amp; clinical summary generation.\n• Chat Messages – real-time communication; sentiment detection.\n• Account &amp; Appointment Data – identify users and schedule sessions.\n• Technical Logs – security &amp; troubleshooting."/>
+
+        <!-- 3. Why We Process -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="3.  Why We Process Your Data"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="• NLP-Powered Insights – detect mood trends, risk indicators and key themes.\n• AI-Assisted Responses – clinical decision-support suggestions for therapists (always reviewed before sending).\n• Service Improvement – aggregated, de-identified statistics help us refine our models."/>
+
+        <!-- 4. How We Protect -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="4.  How We Protect Your Data"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="• End-to-end TLS encryption for all traffic.\n• AES-256 encryption at rest on our servers.\n• Role-based access (only your assigned therapist &amp; NDA-bound admins).\n• Regular penetration testing and security audits.\n• Expiring tokens and brute-force protection."/>
+
+        <!-- 5. Your Rights -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="5.  Your Rights"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="Access &amp; Export • Correction • Deletion • Objection (opt-out of non-essential analytics)."/>
+
+        <!-- 6. Data Retention -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="6.  Data Retention"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="Clinical records are retained for 7 years (or the minimum period required by local medical-record regulations) unless you request earlier deletion. De-identified model-training data is stored indefinitely."/>
+
+        <!-- 7. International Transfers -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="7.  International Transfers"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="Servers are currently located in Frankfurt, EU (AWS). If data is transferred outside your jurisdiction, we rely on Standard Contractual Clauses and equivalent safeguards."/>
+
+        <!-- 8. Third-Party Processors -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="8.  Third-Party Processors"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="We never sell or share your personal data for marketing. Limited service providers (cloud hosting, error-logging) process data solely under our instructions and ISO 27001 / HIPAA-comparable agreements."/>
+
+        <!-- 9. Children’s Privacy -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="9.  Children’s Privacy"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="The Service is intended for users 16 years or older. If you are a minor, parental or guardian consent is required."/>
+
+        <!-- 10. Consent & Updates -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="10.  Consent &amp; Updates"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="By continuing to record diary entries or use the chat, you acknowledge and consent to the NLP and AI processing described above. Any material change to this policy will be announced in-app at least 30 days before it takes effect."/>
+
+        <!-- 11. Contact -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="11.  Contact"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:textSize="14sp"
+            android:text="Data-Protection Officer\nEmail: privacy@easeapp.com\nAddress: 123 Therapy Lane, Tel-Aviv 61000, Israel\nPhone: +972-3-123-4567"/>
+
+        <!-- Footer -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:paddingTop="12dp"
+            android:textSize="12sp"
+            android:text="Last updated: 28 May 2025"/>
+
+        <Button
+            android:id="@+id/close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="close"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"/>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
