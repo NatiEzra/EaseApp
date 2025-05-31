@@ -1,4 +1,5 @@
 [versions]
+activityKtx = "1.10.1"
 agp = "8.7.2"
 androidxNavigationFragmentKtx = "2.6.0"
 cardview = "1.0.0"
@@ -35,8 +36,10 @@ roomRuntime = "2.6.1"
 roomCommon = "2.6.1"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 playServicesLocation = "21.3.0"
+uiTestAndroid = "1.8.2"
 
 [libraries]
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
 androidx-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-navigation-fragment-ktx-v260 = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "androidxNavigationFragmentKtx" }
@@ -73,6 +76,7 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragment" }
 androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+androidx-ui-test-android = { group = "androidx.compose.ui", name = "ui-test-android", version.ref = "uiTestAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,6 +1,7 @@
 package com.example.easeapp.ui.chat
 
 import ChatApiService
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,8 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.addCallback
+import androidx.compose.ui.test.isEnabled
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -41,6 +44,7 @@ class MeetingChatFragment : Fragment() {
     private lateinit var socket: Socket
     private val messages = mutableListOf<ChatMessage>()
     private lateinit var adapter: ChatMessageAdapter
+    private var doctorIdForThisChat: String? = null
 
     private val args: MeetingChatFragmentArgs by navArgs()
 
@@ -58,6 +62,7 @@ class MeetingChatFragment : Fragment() {
 
         val doctorNameTextView = view.findViewById<TextView>(R.id.doctorName)
         val doctorImageView = view.findViewById<ImageView>(R.id.doctorImage)
+        var isEmergencyMeeting :Boolean = false
 
         lifecycleScope.launch {
             try {
@@ -72,24 +77,27 @@ class MeetingChatFragment : Fragment() {
                     showBlockedChatDialog("You cannot access the chat because the appointment is not active.")
                     return@launch
                 }
-/*
-                val apiService = Retrofit.Builder()
-                    //.baseUrl("http://192.168.1.105:3000/")
-                    //.baseUrl("http://10.0.2.2:2999/")
-                    .baseUrl("http://10.0.2.2:3000/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build()
-                    .create(ChatApiService::class.java)
+                isEmergencyMeeting = appointment.isEmergency
+                doctorIdForThisChat= appointment.doctorId
 
-                val repository = ChatRepository(apiService)
+                /*
+                                val apiService = Retrofit.Builder()
+                                    //.baseUrl("http://192.168.1.105:3000/")
+                                    //.baseUrl("http://10.0.2.2:2999/")
+                                    .baseUrl("http://10.0.2.2:3000/")
+                                    .addConverterFactory(GsonConverterFactory.create())
+                                    .build()
+                                    .create(ChatApiService::class.java)
 
-                val historyMessages = repository.fetchChatHistory(
-                    args.appointmentId,
-                    getUserId(),
-                    appointment.doctorId ?: "",
-                    requireContext()
-                )
-*/
+                                val repository = ChatRepository(apiService)
+
+                                val historyMessages = repository.fetchChatHistory(
+                                    args.appointmentId,
+                                    getUserId(),
+                                    appointment.doctorId ?: "",
+                                    requireContext()
+                                )
+                */
                 val chatRepo = ChatRepository(requireContext())
 
                 val historyMessages = chatRepo.fetchChatHistory(
@@ -98,6 +106,9 @@ class MeetingChatFragment : Fragment() {
                 )
                 if (appointment.doctorName!=null){
                     doctorNameTextView.text = appointment.doctorName
+                }
+                if (appointment.doctorId!=null){
+                    doctorIdForThisChat= appointment.doctorId
                 }
 
 
@@ -125,6 +136,34 @@ class MeetingChatFragment : Fragment() {
                 false
             }
         }
+
+        requireActivity().onBackPressedDispatcher
+            .addCallback(viewLifecycleOwner, /* enabled = */ true) {
+                if (isEmergencyMeeting) {
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("Leave Emergency Chat?")
+                        .setMessage("This action will end the session. Are you sure you want to leave?")
+                        .setCancelable(true)
+                        .setPositiveButton("Yes - End Chat") { _, _ ->
+                            isEnabled = false
+                            val payload = JSONObject().apply {
+                                put("meetingId", args.appointmentId)
+                                put("doctorId", doctorIdForThisChat ?: "")
+                            }
+                            socket.emit("endConsultation", payload)
+                            requireActivity().onBackPressed()
+                        }
+                        .setNegativeButton("No - Stay") { dlg, _ ->
+                            dlg.dismiss()
+                        }
+                        .show()
+                } else {
+                    isEnabled = false
+                    requireActivity().onBackPressed()
+                }
+            }
+
+
     }
 
     private fun connectSocket() {
@@ -140,7 +179,7 @@ class MeetingChatFragment : Fragment() {
             // extraHeaders = mapOf("Authorization" to listOf("Bearer $token"))
         }
 
-        socket = IO.socket("http://10.0.2.2:3000", opts)
+        socket = IO.socket("http://10.0.2.2:2999", opts)
 
         // ── if the server emits “unauthorized”, refresh & reconnect ──
         socket.on("unauthorized") {
@@ -174,6 +213,7 @@ class MeetingChatFragment : Fragment() {
                             if (doctorNameTextView!= null && doctorImageView != null) {
                                 Picasso.get().load(userDetails.profilePicture).into(doctorImageView)
                                 doctorNameTextView.text = userDetails.username
+                                doctorIdForThisChat = userDetails._id
                             }
 
                         }

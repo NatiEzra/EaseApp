@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.ui.test.android)
     kapt(libs.androidx.room.compiler)
 
     implementation(libs.retrofit)
@@ -94,4 +95,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation("io.socket:socket.io-client:2.1.0")
     implementation ("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation (libs.androidx.activity.ktx)
+
 }
