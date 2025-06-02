@@ -26,7 +26,8 @@ class DiaryViewModel : ViewModel() {
 
     private val _diaryUpdated = MutableLiveData<Result<Boolean>>()
     val diaryUpdated: LiveData<Result<Boolean>> get() = _diaryUpdated
-
+    private val _isLoading = MutableLiveData<Boolean>()
+    val isLoading: LiveData<Boolean> get() = _isLoading
 
     fun deleteDiaryEntry(context: Context, diaryId: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -75,9 +76,12 @@ class DiaryViewModel : ViewModel() {
     }
     fun loadUserDiaries(context: Context) {
         viewModelScope.launch {
+            _isLoading.postValue(true) // start loading
             val diaryRepo = DiaryRepo(context)
             val diaries = diaryRepo.getUserDiaries()
             _userDiaries.postValue(diaries)
+            _isLoading.postValue(false) // end loading
+
         }
     }
 }

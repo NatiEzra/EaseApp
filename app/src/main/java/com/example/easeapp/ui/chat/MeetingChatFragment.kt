@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
@@ -45,9 +47,9 @@ class MeetingChatFragment : Fragment() {
     private val messages = mutableListOf<ChatMessage>()
     private lateinit var adapter: ChatMessageAdapter
     private var doctorIdForThisChat: String? = null
-
+    private var progressBar: ProgressBar? = null
     private val args: MeetingChatFragmentArgs by navArgs()
-
+    private var loadingLayout : LinearLayout? = null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_emergency_chat, container, false)
     }
@@ -59,13 +61,17 @@ class MeetingChatFragment : Fragment() {
         messageContainer.layoutManager = LinearLayoutManager(requireContext())
         adapter = ChatMessageAdapter(messages)
         messageContainer.adapter = adapter
-
+        progressBar = view.findViewById(R.id.progressBar_EmergencyChat)
+        loadingLayout = view.findViewById<LinearLayout>(R.id.loadingLayout)
         val doctorNameTextView = view.findViewById<TextView>(R.id.doctorName)
         val doctorImageView = view.findViewById<ImageView>(R.id.doctorImage)
         var isEmergencyMeeting :Boolean = false
 
         lifecycleScope.launch {
             try {
+                //progressBar?.visibility = View.VISIBLE
+                loadingLayout?.visibility = View.VISIBLE
+                messageInput.isEnabled = false
                 val thisAppointmentId = args.appointmentId
 
                 val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
@@ -179,7 +185,7 @@ class MeetingChatFragment : Fragment() {
             // extraHeaders = mapOf("Authorization" to listOf("Bearer $token"))
         }
 
-        socket = IO.socket("http://10.0.2.2:2999", opts)
+        socket = IO.socket("http://10.0.2.2:3000", opts)
 
         // ── if the server emits “unauthorized”, refresh & reconnect ──
         socket.on("unauthorized") {
@@ -215,6 +221,9 @@ class MeetingChatFragment : Fragment() {
                                 doctorNameTextView.text = userDetails.username
                                 doctorIdForThisChat = userDetails._id
                             }
+                            //progressBar?.visibility = View.GONE
+                            loadingLayout?.visibility = View.GONE
+                            messageInput.isEnabled = true
 
                         }
 
@@ -232,6 +241,10 @@ class MeetingChatFragment : Fragment() {
                 put("role", "patient")
             }
             socket.emit("joinRoom", joinData)
+            socket.emit("getRoomUsers", JSONObject().apply {
+                put("meetingId", args.appointmentId)
+            })
+
         }
 
         socket.on("consultationEnded") { args ->
@@ -242,7 +255,29 @@ class MeetingChatFragment : Fragment() {
                 handleSessionEnd(summary)
             }
         }
+        socket.on("roomUsers") { args ->
+            val data = args.getOrNull(0) as? JSONObject ?: return@on
+            val users = data.optJSONArray("users") ?: return@on
 
+            var doctorPresent = false
+            for (i in 0 until users.length()) {
+                val user = users.getJSONObject(i)
+                if (user.optString("role") == "doctor") {
+                    doctorPresent = true
+                    break
+                }
+            }
+
+            activity?.runOnUiThread {
+                if (doctorPresent) {
+                    loadingLayout?.visibility = View.GONE
+                    messageInput.isEnabled = true
+                } else {
+                    loadingLayout?.visibility = View.VISIBLE
+                    messageInput.isEnabled = false
+                }
+            }
+        }
         socket.on("newMessage") { args ->
             val data = args[0] as JSONObject
             val senderId = data.getString("from")
@@ -261,6 +296,10 @@ class MeetingChatFragment : Fragment() {
         }
 
         socket.connect()
+        //progressBar?.visibility = View.GONE
+//        loadingLayout?.visibility = View.GONE
+//
+//        messageInput.isEnabled = true
     }
 
     private fun sendCurrentMessage() {

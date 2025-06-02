@@ -63,13 +63,14 @@
             android:layout_height="581dp">
 
             <!-- RecyclerView -->
+
+            <!-- ProgressBar centered -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/fragment_feed_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="visible" />
 
-            <!-- ProgressBar centered -->
             <ProgressBar
                 android:id="@+id/feedProgressBar"
                 style="?android:attr/progressBarStyleLarge"
@@ -78,5 +79,7 @@
                 android:layout_gravity="center"
                 android:visibility="gone" />
         </FrameLayout>
+
     </LinearLayout>
+
 </androidx.core.widget.NestedScrollView>

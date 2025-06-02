@@ -55,7 +55,7 @@ class AddDiaryFragment : Fragment() {
             progressBar.visibility = View.GONE
             result
                 .onSuccess {
-                    findNavController().navigate(R.id.diaryFragment)
+                    findNavController().popBackStack()
                 }
                 .onFailure {
                     Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_SHORT).show()

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -31,6 +32,7 @@ class MyMeetingFragment : Fragment() {
     private lateinit var btnScheduleNew: Button
     private lateinit var meetingLayout: View
     private lateinit var emptyLayout: View
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,6 +51,7 @@ class MyMeetingFragment : Fragment() {
         btnScheduleNew = view.findViewById(R.id.scheduleNewMeetingButton)
         meetingLayout = view.findViewById(R.id.meetingCardLayout)
         emptyLayout = view.findViewById(R.id.emptyLayout)
+        progressBar = view.findViewById(R.id.progressBar_my_meeting)
 
         fetchAndDisplayAppointment()
 
@@ -59,6 +62,7 @@ class MyMeetingFragment : Fragment() {
     }
 
     private fun fetchAndDisplayAppointment() {
+        progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
             try {
                 val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
@@ -68,9 +72,11 @@ class MyMeetingFragment : Fragment() {
                 }
                 if (appointment != null) {
                     displayAppointment(appointment)
+
                 } else {
                     displayNoAppointment()
                 }
+                progressBar.visibility = View.GONE
             } catch (e: Exception) {
                 displayNoAppointment()
                 //Toast.makeText(requireContext(), e.message ?: "Failed to load appointment", Toast.LENGTH_SHORT).show()

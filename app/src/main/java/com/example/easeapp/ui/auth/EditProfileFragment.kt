@@ -16,6 +16,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.ease.R
 import com.example.ease.model.local.AppDatabase
 import com.example.ease.model.local.UserEntity
@@ -46,7 +47,6 @@ private var galleryLauncher: ActivityResultLauncher<String>? = null
 private lateinit var dateTextView: TextView
 private lateinit var genderSpinner: Spinner
 private lateinit var phoneEditText: EditText
-
 class editProfileFragment : Fragment() {
 
     private var param1: String? = null
@@ -148,6 +148,7 @@ class editProfileFragment : Fragment() {
         }
 
         saveButton.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             val newName = editProfileName.text.toString().trim()
             val newPhone = phoneEditText.text.toString().trim()
             val newDate = dateTextView.text.toString().trim()
@@ -209,11 +210,12 @@ class editProfileFragment : Fragment() {
                                         )
                                     }
                                     (activity as? MainActivity)?.refreshProfile(requireContext())
-                                    (activity as? MainActivity)?.myProfilePageButtonClicked()
+                                    findNavController().popBackStack()
                                 }
                             } else {
                                 Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()
                             }
+                            progressBar.visibility = View.GONE
                         }
 
                         override fun onFailure(call: retrofit2.Call<UpdateProfileResponse>, t: Throwable) {
