@@ -148,7 +148,7 @@ class BookingAppointmentFragment : Fragment() {
 
     private fun fetchAvailableTimeSlots(doctorId: String?, date: String) {
         if (doctorId == null) return
-        var accessToken = getAccessToken(requireContext())?.replace("refreshToken=", "hello, ")?.replace(";", "") ?: return
+        //var accessToken = getAccessToken(requireContext())?.replace("refreshToken=", "hello, ")?.replace(";", "") ?: return
         val call = context?.let { appointmentsApiClient.create(it).getAvailableSlots(doctorId, date) }
         if (call != null) {
             call.enqueue(object : Callback<AvailableSlotsResponse> {
