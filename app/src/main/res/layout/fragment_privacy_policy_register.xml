@@ -195,7 +195,7 @@
             android:layout_height="wrap_content"
             android:paddingStart="4dp"
             android:textSize="14sp"
-            android:text="Data-Protection Officer\nEmail: privacy@easeapp.com\nAddress: 123 Therapy Lane, Tel-Aviv 61000, Israel\nPhone: +972-3-123-4567"/>
+            android:text="Data-Protection Officer\nprivacy@easeapp.com\nThe College of Management Academic Studies, Rishon-Lezion, Israel"/>
 
         <!-- Footer -->
         <TextView

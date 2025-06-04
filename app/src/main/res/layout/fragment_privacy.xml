@@ -369,7 +369,7 @@
                     android:layout_height="wrap_content"
                     android:paddingTop="4dp"
                     android:textSize="14sp"
-                    android:text="Data-Protection Officer\nprivacy@easeapp.com\n123 Therapy Lane, Tel-Aviv 61000, Israel\n+972-3-123-4567"/>
+                    android:text="Data-Protection Officer\nprivacy@easeapp.com\nThe College of Management Academic Studies, Rishon-Lezion, Israel"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
