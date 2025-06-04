@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +21,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -29,7 +31,11 @@ import com.example.ease.base.MyApplication.Globals.context
 import com.example.ease.model.local.AppDatabase
 import com.example.ease.model.local.UserEntity
 import com.example.ease.viewmodel.UserViewModel
+import com.example.easeapp.model.RetrofitProvider.RetrofitProvider
 import com.example.easeapp.model.SocketManager
+import com.example.easeapp.model.requests.NotificationApi
+import com.example.easeapp.repositories.NotificationRepository
+import com.example.easeapp.viewmodel.NotificationsViewModel
 import com.google.android.material.navigation.NavigationView
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.NetworkPolicy
@@ -39,6 +45,7 @@ import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
     val autViewModel: AuthViewModel by lazy { ViewModelProvider(this)[AuthViewModel::class.java] }
 
@@ -46,6 +53,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navView: NavigationView
     private lateinit var toggle: ActionBarDrawerToggle
+    private lateinit var notificationCountTextView: TextView
+    private lateinit var notificationRepository: NotificationRepository
+    private lateinit var notificationsViewModel: NotificationsViewModel
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +69,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        val retrofit = RetrofitProvider.provideRetrofit(this)
+        val api = retrofit.create(NotificationApi::class.java)
+        notificationRepository = NotificationRepository(api)
+
+        notificationsViewModel = ViewModelProvider(
+            this,
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    if (modelClass.isAssignableFrom(NotificationsViewModel::class.java)) {
+                        @Suppress("UNCHECKED_CAST")
+                        return NotificationsViewModel(notificationRepository) as T
+                    }
+                    throw IllegalArgumentException("Unknown ViewModel class")
+                }
+            }
+        )[NotificationsViewModel::class.java]
 
         navController =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment)?.findNavController()
@@ -73,6 +101,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         findViewById<ImageView>(R.id.menu_icon).setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.END)
         }
+
+        val headerView = navView.getHeaderView(0)
+
+        val badgeContainer = headerView.findViewById<FrameLayout>(R.id.notification_badge_container)
+
+        badgeContainer.setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.END)
+            navController.navigate(R.id.notificationsFragment)
+        }
+        val tvCount = headerView.findViewById<TextView>(R.id.notification_count)
+        notificationCountTextView = tvCount
+
+        notificationsViewModel.unreadCount.observe(this) { count ->
+            if (count > 0) {
+                notificationCountTextView.text = count.toString()
+                notificationCountTextView.visibility = View.VISIBLE
+            } else {
+                notificationCountTextView.visibility = View.GONE
+            }
+        }
+
+        notificationsViewModel.loadInitialUnreadCount()
 
         val backButton: ImageView = findViewById(R.id.back_icon)
         backButton.setOnClickListener {
@@ -91,6 +141,25 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navView.setNavigationItemSelectedListener(this)
 
+        SocketManager.setOnNewNotificationCallback {
+            runOnUiThread { notificationsViewModel.incrementBy() }
+        }
+//roy ze hahelek shemakris
+//        val userEntity: UserEntity? = AppDatabase
+//            .getInstance(this)
+//            .userDao()
+//            .getCurrentUserBlocking()
+//        userEntity?.let {
+//            SocketManager.init(it._id, this)
+//        }
+
+
+
+
+
+
+
+
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -104,6 +173,32 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         refreshProfile(this)
     }
+    override fun onResume() {
+        super.onResume()
+        updateUnreadBadge()
+    }
+
+    fun updateUnreadBadge() {
+        lifecycleScope.launch {
+            try {
+                // 1) Fetch all notifications
+                val all = notificationRepository.fetchAll()
+                // 2) Count how many are not read
+                val unreadCount = all.count { !it.isRead }
+                // 3) Show or hide the red circle
+                if (unreadCount > 0) {
+                    notificationCountTextView.text = unreadCount.toString()
+                    notificationCountTextView.visibility = View.VISIBLE
+                } else {
+                    notificationCountTextView.visibility = View.GONE
+                }
+            } catch (e: Exception) {
+                // If the fetch fails, just hide the badge
+                notificationCountTextView.visibility = View.GONE
+            }
+        }
+    }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (toggle.onOptionsItemSelected(item)) true

@@ -9,6 +9,12 @@ import org.json.JSONObject
 object SocketManager {
     lateinit var socket: Socket
 
+    private var onNewNotificationCallback: (() -> Unit)? = null
+
+    fun setOnNewNotificationCallback(callback: () -> Unit) {
+        onNewNotificationCallback = callback
+    }
+
     fun init(userId: String, context: Context) {
         if (::socket.isInitialized && socket.connected()) return
 
@@ -17,10 +23,15 @@ object SocketManager {
             reconnection = true
         }
 
-        //socket = IO.socket("http://192.168.1.105:3000", opts)
-        //socket = IO.socket("http://10.0.2.2:2999", opts)
-        socket = IO.socket("http://10.0.2.2:3000", opts)
 
+        //socket = IO.socket("http://192.168.1.105:3000", opts)
+        socket = IO.socket("http://10.0.2.2:2999", opts)
+        //socket = IO.socket("http://10.0.2.2:3000", opts)
+
+
+        socket.on("newNotification") { args ->
+            onNewNotificationCallback?.invoke()
+        }
 
         socket.on(Socket.EVENT_CONNECT) {
             // subscribe globally _and_ to chats

@@ -96,5 +96,13 @@ dependencies {
     implementation("io.socket:socket.io-client:2.1.0")
     implementation ("com.squareup.okhttp3:okhttp:4.10.0")
     implementation (libs.androidx.activity.ktx)
+    implementation (libs.moshi)
+    implementation (libs.moshi.kotlin)
+    implementation (libs.moshi.v1140)
+    implementation (libs.moshi.kotlin.v1140)
+    implementation (libs.moshi.adapters)
+    implementation (libs.converter.moshi)
+
+
 
 }

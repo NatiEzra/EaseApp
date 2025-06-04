@@ -1,11 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="160dp"
     android:orientation="vertical"
     android:padding="16dp"
     android:gravity="bottom"
     android:background="@drawable/bg_drawer_header">
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/notification_badge_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right">
+        <ImageView
+            android:id="@+id/notification_bell"
+            android:layout_width="48dp"
+            android:layout_height="39dp"
+            android:layout_gravity="right"
+            android:contentDescription="Notifications"
+            android:src="@drawable/bell_outline" />
+
+        <TextView
+            android:id="@+id/notification_count"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/bg_notification_badge_circle"
+            android:gravity="center"
+            android:text="0"
+            android:textColor="@android:color/white"
+            android:textSize="10sp"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/header_profile_image"
@@ -27,8 +56,9 @@
     <TextView
         android:id="@+id/header_user_email"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="2dp"
         android:text="user@example.com"
         android:textColor="#666666"
         android:textSize="14sp" />
+
 </LinearLayout>

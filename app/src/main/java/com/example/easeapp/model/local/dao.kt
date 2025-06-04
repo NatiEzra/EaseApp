@@ -10,6 +10,9 @@ interface UserDao {
     @Query("SELECT * FROM user LIMIT 1")
     suspend fun getCurrentUser(): UserEntity?
 
+    @Query("SELECT * FROM user LIMIT 1")
+    fun getCurrentUserBlocking(): UserEntity?
+
     @Update
     suspend fun update(user: UserEntity)
 

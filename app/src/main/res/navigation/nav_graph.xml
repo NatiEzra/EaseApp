@@ -23,7 +23,11 @@
         android:id="@+id/privacyFragment"
         android:name="com.example.ease.ui.activities.PrivacyFragment"
         android:label="Privacy"
-        tools:layout="@layout/fragment_privacy" />
+        tools:layout="@layout/fragment_privacy" >
+        <action
+            android:id="@+id/action_privacyFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/registerFragment"
@@ -37,16 +41,27 @@
         <action
             android:id="@+id/action_myProfileFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_myProfileFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/editProfileFragment"
         android:name="com.example.ease.ui.auth.editProfileFragment"
-        android:label="Edit Profile" />
+        android:label="Edit Profile" >
+        <action
+            android:id="@+id/action_editProfileFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/chatSelectorFragment"
         android:name="com.example.ease.ui.chat.ChatSelectorFragment"
-        android:label="Chat Selector" />
+        android:label="Chat Selector" >
+        <action
+            android:id="@+id/action_chatSelectorFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/chatRoutineFragment"
@@ -58,19 +73,30 @@
         <action
             android:id="@+id/action_routineFragment_to_myMeetingFragment"
             app:destination="@id/myMeetingFragment" />
+        <action
+            android:id="@+id/action_chatRoutineFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
 
     </fragment>
     <fragment
         android:id="@+id/emergencyChatFragment"
         android:name="com.example.easeapp.ui.chat.EmergencyChatFragment"
-        android:label="Emergency Chat" />
+        android:label="Emergency Chat" >
+        <action
+            android:id="@+id/action_emergencyChatFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
     <action
         android:id="@+id/action_emergencyChatFragment_to_chatSelectorFragment"
         app:destination="@id/chatSelectorFragment" />
     <fragment
         android:id="@+id/emergencyPageFragment"
         android:name="com.example.easeapp.ui.emergency.EmergencyPageFragment"
-        android:label="Emergency Page" />
+        android:label="Emergency Page" >
+        <action
+            android:id="@+id/action_emergencyPageFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
     <action
         android:id="@+id/action_homePageFragment_to_emergencyPageFragment"
         app:destination="@id/emergencyPageFragment" />
@@ -81,6 +107,9 @@
         <action
             android:id="@+id/action_scheduleRoutineMeeting_to_bookingAppointmentFragment"
             app:destination="@id/bookingAppointmentFragment" />
+        <action
+            android:id="@+id/action_scheduleRoutineMeeting_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
     </fragment>
     <fragment
         android:id="@+id/bookingAppointmentFragment"
@@ -96,6 +125,9 @@
         <action
             android:id="@+id/action_bookingAppointmentFragment_to_appointmentConfirmationFragment"
             app:destination="@id/appointmentConfirmationFragment" />
+        <action
+            android:id="@+id/action_bookingAppointmentFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
     </fragment>
     <fragment
         android:id="@+id/appointmentConfirmationFragment"
@@ -114,6 +146,9 @@
             app:destination="@id/homePageFragment"
             app:popUpTo="@id/appointmentConfirmationFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_appointmentConfirmationFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
     </fragment>
 
     <fragment
@@ -123,6 +158,9 @@
         <action
             android:id="@+id/action_myMeetingFragment_to_scheduleRoutineMeeting"
             app:destination="@id/scheduleRoutineMeeting"/>
+        <action
+            android:id="@+id/action_myMeetingFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
     </fragment>
 
     <fragment
@@ -132,26 +170,36 @@
         <argument
             android:name="appointmentId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_meetingChatFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/diaryFragment"
         android:name="com.example.easeapp.ui.DiaryFragment"
-        android:label="diaryFragment" />
+        android:label="diaryFragment" >
+        <action
+            android:id="@+id/action_diaryFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/addDiaryFragment"
         android:name="com.example.easeapp.ui.activities.AddDiaryFragment"
-        android:label="addDiaryFragment" />
+        android:label="addDiaryFragment" >
+        <action
+            android:id="@+id/action_addDiaryFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+    </fragment>
 
     <action
         android:id="@+id/action_routineFragment_to_meetingChatFragment"
         app:destination="@id/meetingChatFragment" />
-
-
-
-
-
-
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="com.example.easeapp.ui.activities.NotificationsFragment"
+        android:label="fragment_notifications"
+        tools:layout="@layout/fragment_notifications" />
 
 
 </navigation>
