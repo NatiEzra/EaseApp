@@ -3,12 +3,14 @@ package com.example.easeapp.ui.activities
 import android.app.AlertDialog
 import android.graphics.Canvas
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -32,6 +34,8 @@ class NotificationsFragment : Fragment() {
     private lateinit var recycler: RecyclerView
     private lateinit var adapter: NotificationAdapter
     private lateinit var repository: NotificationRepository
+    private lateinit var noNotificationsTextView: TextView
+    private lateinit var clearAllButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,14 +61,20 @@ class NotificationsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         recycler = view.findViewById(R.id.recycler_notifications)
         recycler.layoutManager = LinearLayoutManager(requireContext())
+        noNotificationsTextView = view.findViewById(R.id.notification_empty_text)
+        clearAllButton = view.findViewById(R.id.clear_all_button)
 
         adapter = NotificationAdapter(emptyList(),
             onItemClick = { notification ->
                 // 2) Mark it as read when clicked:
                 markAsRead(notification.id)
+
             },
 
         )
+        clearAllButton.setOnClickListener {
+            promptClearAll()
+        }
 
         recycler.adapter = adapter
 
@@ -94,6 +104,14 @@ class NotificationsFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val list = repository.fetchAll()
+                Log.d("NotificationsDebug", "notifications = $list")
+                if (list.isEmpty()) {
+                    noNotificationsTextView.visibility = View.VISIBLE
+                    recycler.visibility = View.GONE
+                } else {
+                    noNotificationsTextView.visibility = View.GONE
+                    recycler.visibility = View.VISIBLE
+                }
                 adapter.updateList(list)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show()
@@ -102,17 +120,23 @@ class NotificationsFragment : Fragment() {
     }
 
     /** 2) Mark a notification as read */
-    private fun markAsRead(notificationId: String) {
+    private fun markAsRead(notificationId: String?) {
+        if (notificationId.isNullOrBlank()) {
+            Toast.makeText(requireContext(), "cant mark notification without id", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         lifecycleScope.launch {
             val success = repository.markAsRead(notificationId)
             if (success) {
-                // Refresh UI: reload or just update the single item’s isRead
                 loadNotifications()
+                (activity as? MainActivity)?.updateUnreadBadge()
             } else {
                 Toast.makeText(requireContext(), "Failed to mark as read", Toast.LENGTH_SHORT).show()
             }
         }
     }
+
 
     /** 3) Delete a notification by ID */
     private fun deleteNotification(notificationId: String) {
@@ -142,7 +166,7 @@ class NotificationsFragment : Fragment() {
     private fun promptClearAll() {
         AlertDialog.Builder(requireContext())
             .setTitle("Clear all notifications")
-            .setMessage("This will delete every notification. Continue?")
+            .setMessage("This action will delete all of your notifications. Continue?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("OK") { _, _ ->
                 clearAll()
@@ -155,6 +179,16 @@ class NotificationsFragment : Fragment() {
             val success = repository.clearAll()
             if (success) {
                 adapter.updateList(emptyList())
+                noNotificationsTextView.visibility = View.VISIBLE
+                recycler.visibility = View.GONE
+                if (adapter.itemCount == 0) {
+                    noNotificationsTextView.visibility = View.VISIBLE
+                    recycler.visibility = View.GONE
+                } else {
+                    noNotificationsTextView.visibility = View.GONE
+                    recycler.visibility = View.VISIBLE
+                }
+                (activity as? MainActivity)?.updateUnreadBadge()
             } else {
                 Toast.makeText(requireContext(), "Failed to clear notifications", Toast.LENGTH_SHORT).show()
             }
@@ -163,10 +197,9 @@ class NotificationsFragment : Fragment() {
 
     private fun attachSwipeToDelete() {
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(
-            0,  // We do not want drag‐and‐drop, so dragDirs = 0
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT  // allow left or right swipe
+            0,
+            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
-            // We’re not supporting “drag” so this is unused:
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -174,53 +207,57 @@ class NotificationsFragment : Fragment() {
             ): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                // 1) Get the swiped Notification
                 val position = viewHolder.adapterPosition
                 val notification = adapter.getItemAt(position)
 
-                // 2) Call repository to delete it on the server
+                val notificationId = notification.id
+                if (notificationId.isNullOrBlank()) {
+                    Toast.makeText(requireContext(), "לא ניתן למחוק התראה ללא מזהה תקף", Toast.LENGTH_SHORT).show()
+                    adapter.notifyItemChanged(position)
+                    return
+                }
+
                 lifecycleScope.launch {
-                    val deleted = repository.deleteById(notification.id)
+                    val deleted = repository.deleteById(notificationId)
                     if (deleted) {
-                        // 3a) Update local adapter immediately
                         val currentList = adapter.run {
-                            // Make a mutable copy, remove the item, then update
                             val temp = items.toMutableList()
                             temp.removeAt(position)
                             temp.toList()
                         }
                         adapter.updateList(currentList)
-
-                        // 3b) Also update the unread count badge if needed
+                        if (adapter.itemCount == 0) {
+                            noNotificationsTextView.visibility = View.VISIBLE
+                            recycler.visibility = View.GONE
+                        }
                         (activity as? MainActivity)?.updateUnreadBadge()
                     } else {
-                        // 4) If delete fails, restore the item in the adapter
                         adapter.notifyItemChanged(position)
+                        if (adapter.itemCount == 0) {
+                            noNotificationsTextView.visibility = View.VISIBLE
+                            recycler.visibility = View.GONE
+                        }
                         Toast.makeText(requireContext(), "Could not delete", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
 
-            // Optionally, you can draw a red background + trash icon while swiping:
             override fun onChildDraw(
                 c: Canvas,
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
-                dX: Float, // how far the user swiped
+                dX: Float,
                 dY: Float,
                 actionState: Int,
                 isCurrentlyActive: Boolean
             ) {
-                // For simplicity, call super – you can customize this to show a colored background.
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
         }
 
-        // Finally, attach it:
         val itemTouchHelper = ItemTouchHelper(swipeCallback)
         itemTouchHelper.attachToRecyclerView(recycler)
     }
-
 }
 
 /** Adapter updated with click listeners for read/delete: */

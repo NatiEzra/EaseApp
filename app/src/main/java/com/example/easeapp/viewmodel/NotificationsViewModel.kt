@@ -1,5 +1,6 @@
 package com.example.easeapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -28,11 +29,9 @@ class NotificationsViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val allNotifications: List<Notification> = repository.fetchAll()
-                // Count how many are unread
                 val count = allNotifications.count { !it.isRead }
                 _unreadCount.postValue(count)
             } catch (e: Exception) {
-                // On error, just set to zero (or handle however you want)
                 _unreadCount.postValue(0)
             }
         }
@@ -63,4 +62,25 @@ class NotificationsViewModel(
     fun clearAll() {
         _unreadCount.value = 0
     }
+    fun setCount(value: Int) {
+        _unreadCount.postValue(value)
+    }
+
+    /**
+     * 6) This method fetches all notifications and recalculates the unread count.
+     *    Call it when receiving a new notification via WebSocket to ensure accurate badge.
+     */
+    fun refreshUnreadCountFromServer() {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val allNotifications = repository.fetchAll()
+                val count = allNotifications.count { !it.isRead }
+                Log.d("NotificationDebug", "New unread count: $count")
+                _unreadCount.postValue(count)
+            } catch (e: Exception) {
+                Log.e("NotificationDebug", "Failed to refresh count", e)
+            }
+        }
+    }
+
 }
