@@ -10,6 +10,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -33,6 +34,8 @@ class NotificationsFragment : Fragment() {
     private lateinit var recycler: RecyclerView
     private lateinit var adapter: NotificationAdapter
     private lateinit var repository: NotificationRepository
+    private lateinit var noNotificationsTextView: TextView
+    private lateinit var clearAllButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,14 +61,20 @@ class NotificationsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         recycler = view.findViewById(R.id.recycler_notifications)
         recycler.layoutManager = LinearLayoutManager(requireContext())
+        noNotificationsTextView = view.findViewById(R.id.notification_empty_text)
+        clearAllButton = view.findViewById(R.id.clear_all_button)
 
         adapter = NotificationAdapter(emptyList(),
             onItemClick = { notification ->
                 // 2) Mark it as read when clicked:
                 markAsRead(notification.id)
+
             },
 
         )
+        clearAllButton.setOnClickListener {
+            promptClearAll()
+        }
 
         recycler.adapter = adapter
 
@@ -96,6 +105,13 @@ class NotificationsFragment : Fragment() {
             try {
                 val list = repository.fetchAll()
                 Log.d("NotificationsDebug", "notifications = $list")
+                if (list.isEmpty()) {
+                    noNotificationsTextView.visibility = View.VISIBLE
+                    recycler.visibility = View.GONE
+                } else {
+                    noNotificationsTextView.visibility = View.GONE
+                    recycler.visibility = View.VISIBLE
+                }
                 adapter.updateList(list)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show()
@@ -114,6 +130,7 @@ class NotificationsFragment : Fragment() {
             val success = repository.markAsRead(notificationId)
             if (success) {
                 loadNotifications()
+                (activity as? MainActivity)?.updateUnreadBadge()
             } else {
                 Toast.makeText(requireContext(), "Failed to mark as read", Toast.LENGTH_SHORT).show()
             }
@@ -149,7 +166,7 @@ class NotificationsFragment : Fragment() {
     private fun promptClearAll() {
         AlertDialog.Builder(requireContext())
             .setTitle("Clear all notifications")
-            .setMessage("This will delete every notification. Continue?")
+            .setMessage("This action will delete all of your notifications. Continue?")
             .setNegativeButton("Cancel", null)
             .setPositiveButton("OK") { _, _ ->
                 clearAll()
@@ -162,6 +179,16 @@ class NotificationsFragment : Fragment() {
             val success = repository.clearAll()
             if (success) {
                 adapter.updateList(emptyList())
+                noNotificationsTextView.visibility = View.VISIBLE
+                recycler.visibility = View.GONE
+                if (adapter.itemCount == 0) {
+                    noNotificationsTextView.visibility = View.VISIBLE
+                    recycler.visibility = View.GONE
+                } else {
+                    noNotificationsTextView.visibility = View.GONE
+                    recycler.visibility = View.VISIBLE
+                }
+                (activity as? MainActivity)?.updateUnreadBadge()
             } else {
                 Toast.makeText(requireContext(), "Failed to clear notifications", Toast.LENGTH_SHORT).show()
             }
@@ -199,9 +226,17 @@ class NotificationsFragment : Fragment() {
                             temp.toList()
                         }
                         adapter.updateList(currentList)
+                        if (adapter.itemCount == 0) {
+                            noNotificationsTextView.visibility = View.VISIBLE
+                            recycler.visibility = View.GONE
+                        }
                         (activity as? MainActivity)?.updateUnreadBadge()
                     } else {
                         adapter.notifyItemChanged(position)
+                        if (adapter.itemCount == 0) {
+                            noNotificationsTextView.visibility = View.VISIBLE
+                            recycler.visibility = View.GONE
+                        }
                         Toast.makeText(requireContext(), "Could not delete", Toast.LENGTH_SHORT).show()
                     }
                 }
