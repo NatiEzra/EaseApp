@@ -37,6 +37,7 @@ import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.ease.model.UserRepository
+import androidx.navigation.NavOptions
 
 class MeetingChatFragment : Fragment() {
 
@@ -315,16 +316,30 @@ class MeetingChatFragment : Fragment() {
         messageInput.isEnabled = false
         sendIcon.isEnabled = false
 
-        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Session Ended")
-            .setMessage("The consultation has ended. You can no longer send messages.")
+            .setMessage("The consultation has ended. Would you like to schedule your next meeting?")
             .setCancelable(false)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton("Schedule") { _, _ ->
+                val navOptions = NavOptions.Builder()
+                    .setPopUpTo(
+                        R.id.meetingChatFragment,
+                        true
+                    )
+                    .build()
+
+                findNavController().navigate(
+                    R.id.action_meetingChatFragment_to_scheduleRoutineMeeting,
+                    null,
+                    navOptions
+                )
+            }
+            .setNegativeButton("Cancel") { _, _ ->
                 requireActivity().onBackPressedDispatcher.onBackPressed()
             }
             .create()
-        dialog.show()
 
+        dialog.show()
         socket.disconnect()
     }
 

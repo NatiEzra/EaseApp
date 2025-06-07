@@ -173,6 +173,9 @@
         <action
             android:id="@+id/action_meetingChatFragment_to_notificationsFragment"
             app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_meetingChatFragment_to_scheduleRoutineMeeting"
+            app:destination="@id/scheduleRoutineMeeting" />
     </fragment>
 
     <fragment
