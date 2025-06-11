@@ -28,7 +28,9 @@ import com.example.easeapp.model.requests.UpdateProfileResponse
 import com.example.easeapp.model.requests.UserApiClient
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -196,21 +198,25 @@ class editProfileFragment : Fragment() {
                                 val updatedUser = response.body()?.user
                                 updatedUser?.let { u ->
                                     lifecycleScope.launch {
-                                        AppDatabase.getInstance(requireContext()).userDao().insert(
-                                            UserEntity(
-                                                _id = u._id,
-                                                email = u.email,
-                                                name = u.username,
-                                                profileImageUrl = u.profilePicture,
-                                                accessToken = currentUser.accessToken,
-                                                phoneNumber = u.phoneNumber,
-                                                dateOfBirth = u.dateOfBirth,
-                                                gender = u.gender
+                                        withContext(Dispatchers.IO) {
+                                            AppDatabase.getInstance(requireContext()).userDao().insert(
+                                                UserEntity(
+                                                    _id = u._id,
+                                                    email = u.email,
+                                                    name = u.username,
+                                                    profileImageUrl = u.profilePicture,
+                                                    accessToken = currentUser.accessToken,
+                                                    phoneNumber = u.phoneNumber,
+                                                    dateOfBirth = u.dateOfBirth,
+                                                    gender = u.gender
+                                                )
                                             )
-                                        )
+                                        }
+
+                                        // ✅ עכשיו ה-DB מעודכן – נקרא לרענון
+                                        (activity as? MainActivity)?.refreshProfile(requireContext())
+                                        findNavController().popBackStack()
                                     }
-                                    (activity as? MainActivity)?.refreshProfile(requireContext())
-                                    findNavController().popBackStack()
                                 }
                             } else {
                                 Toast.makeText(requireContext(), "Failed to update profile", Toast.LENGTH_SHORT).show()

@@ -18,7 +18,7 @@ object SocketManager {
             reconnection = true
         }
 
-        socket = IO.socket("http://10.0.2.2:2999", opts)
+        socket = IO.socket("http://10.0.2.2:3000", opts)
 
         socket.on(Socket.EVENT_CONNECT) {
             Log.d("SOCKET", "✅ Connected to socket")

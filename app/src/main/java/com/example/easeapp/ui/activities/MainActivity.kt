@@ -239,16 +239,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             val user: UserEntity? = AppDatabase.getInstance(this@MainActivity).userDao().getCurrentUser()
             if (user != null) {
                 SocketManager.init(user._id, context)
+
                 headerUserName.text = user.name
                 headerUserEmail.text = user.email
+
                 if (!user.profileImageUrl.isNullOrEmpty()) {
-                    val fixedUrl = fixImageUrl(user.profileImageUrl) + "?t=" + System.currentTimeMillis()
+                    val rawUrl = user.profileImageUrl
+                    val fixedUrl = rawUrl.replace("localhost", "10.0.2.2") + "?t=" + System.currentTimeMillis()
+
+                    Log.d("PROFILE_IMAGE", "Trying to load: $fixedUrl")
+
                     Picasso.get().invalidate(fixedUrl)
                     Picasso.get()
                         .load(fixedUrl)
                         .networkPolicy(NetworkPolicy.NO_CACHE, NetworkPolicy.NO_STORE)
                         .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
                         .transform(CropCircleTransformation())
+                        .placeholder(R.drawable.ic_placeholder)
+
                         .into(headerProfileImage)
                 } else {
                     headerProfileImage.setImageResource(R.drawable.ic_placeholder)

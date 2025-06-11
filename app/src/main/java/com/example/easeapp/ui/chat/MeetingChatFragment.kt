@@ -90,6 +90,7 @@ class MeetingChatFragment : Fragment() {
                 /*
                                 val apiService = Retrofit.Builder()
                                     //.baseUrl("http://192.168.1.105:3000/")
+                                    //.baseUrl("http://192.168.1.105:3000/")
                                     //.baseUrl("http://10.0.2.2:2999/")
                                     .baseUrl("http://10.0.2.2:3000/")
                                     .addConverterFactory(GsonConverterFactory.create())
@@ -186,7 +187,7 @@ class MeetingChatFragment : Fragment() {
             // extraHeaders = mapOf("Authorization" to listOf("Bearer $token"))
         }
 
-        socket = IO.socket("http://10.0.2.2:2999", opts)
+        socket = IO.socket("http://10.0.2.2:3000", opts)
         //socket = IO.socket("http://192.168.1.105:3000", opts)
 
         // ── if the server emits “unauthorized”, refresh & reconnect ──
