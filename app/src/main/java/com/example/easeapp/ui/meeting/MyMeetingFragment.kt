@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -115,15 +116,30 @@ class MyMeetingFragment : Fragment() {
             .into(doctorImage)
 
         btnChange.setOnClickListener {
-            AppointmentRepository.shared.deleteAppointment(requireContext(), appointment._id) { success, message ->
-                if (success) {
-                    val action = MyMeetingFragmentDirections.actionMyMeetingFragmentToScheduleRoutineMeeting()
-                    findNavController().navigate(action)
-                } else {
-                    Toast.makeText(requireContext(), message ?: "Failed to cancel meeting", Toast.LENGTH_SHORT).show()
+            AlertDialog.Builder(requireContext())
+                .setTitle("Change Appointment")
+                .setMessage("\"Are you sure you want to change your appointment? \" +\n" +
+                        "            \"This will cancel your current booking, and if you change your mind, \" +\n" +
+                        "            \"you’ll need to reschedule it.\"")
+                .setPositiveButton("Yes") { _, _ ->
+                    AppointmentRepository.shared.deleteAppointment(requireContext(), appointment._id) { success, message ->
+                        if (success) {
+                            val action = MyMeetingFragmentDirections
+                                .actionMyMeetingFragmentToScheduleRoutineMeeting()
+                            findNavController().navigate(action)
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                message ?: "Failed to cancel meeting",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 }
-            }
+                .setNegativeButton("No", null)  // Dismisses dialog by default
+                .show()
         }
+
         btnApprove.setOnClickListener{
             val dialogView = layoutInflater.inflate(R.layout.dialog_emergency_confirm, null)
 

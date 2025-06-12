@@ -168,7 +168,7 @@ class RegisterFragment : Fragment() {
             }
             if (privacyPolicyCheckbox != null) {
                 if (!privacyPolicyCheckbox.isChecked) {
-                    Toast.makeText(context, "You must agree to the Privacy Policy", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please confirm that you have read and agree to our Privacy Policy", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             }

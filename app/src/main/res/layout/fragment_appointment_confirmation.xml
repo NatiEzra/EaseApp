@@ -23,10 +23,11 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Your Appointment Successful"
-        android:textSize="16sp"
+        android:layout_marginTop="8dp"
+        android:text="Your appointment has been scheduled successfully!"
+        android:gravity="center"
         android:textColor="#555555"
-        android:layout_marginTop="8dp" />
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/doctorText"
