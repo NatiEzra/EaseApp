@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +15,7 @@ import com.example.easeapp.repositories.AppointmentRepository
 import kotlinx.coroutines.launch
 
 class ChatRoutineFragment : Fragment() {
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -26,8 +28,10 @@ class ChatRoutineFragment : Fragment() {
         val btnSchedule = view.findViewById<Button>(R.id.btnSchedule)
         val btnMyMeeting = view.findViewById<Button>(R.id.btnMyMeeting)
         val btnJoinMeeting = view.findViewById<Button>(R.id.btnJoinMeeting)
+        progressBar = view.findViewById(R.id.progressBar2)
 
         btnSchedule.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             lifecycleScope.launch {
                 try {
                     val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
@@ -43,6 +47,7 @@ class ChatRoutineFragment : Fragment() {
                     val action = ChatRoutineFragmentDirections.actionChatRoutineFragmentToScheduleRoutineMeeting()
                     findNavController().navigate(action)
                 }
+                progressBar.visibility = View.GONE
             }
         }
 
@@ -52,6 +57,7 @@ class ChatRoutineFragment : Fragment() {
         }
 
         btnJoinMeeting.setOnClickListener {
+            progressBar.visibility = View.VISIBLE
             lifecycleScope.launch {
                 try {
                     val appointments = AppointmentRepository.shared.getUpcomingAppointmentForPatient(requireContext())
@@ -65,8 +71,10 @@ class ChatRoutineFragment : Fragment() {
                             }
                         }
                     }
+                    progressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), "No active meeting found", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
+                    progressBar.visibility = View.GONE
                     Toast.makeText(requireContext(), "Error checking meeting status", Toast.LENGTH_SHORT).show()
                 }
             }
