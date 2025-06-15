@@ -193,6 +193,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_home -> navController.navigate(R.id.homePageFragment)
             R.id.nav_profile -> navController.navigate(R.id.myProfileFragment)
             R.id.nav_privacy -> navController.navigate(R.id.privacyFragment)
+            R.id.nav_about -> navController.navigate(R.id.aboutUsFragment)
             R.id.nav_logout -> {
                 drawerLayout.closeDrawers()
                 lifecycleScope.launch {
