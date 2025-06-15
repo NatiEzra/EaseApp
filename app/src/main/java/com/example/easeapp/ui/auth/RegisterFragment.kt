@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.util.Patterns
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -178,6 +179,17 @@ class RegisterFragment : Fragment() {
             }
             if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || username.isEmpty()) {
                 Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val emailPattern = Patterns.EMAIL_ADDRESS
+            if (!emailPattern.matcher(email).matches()) {
+                Toast.makeText(context, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val usernamePattern = Regex("^[a-zA-Z0-9_]{3,}$")
+            if (!usernamePattern.matches(username)) {
+                Toast.makeText(context, "Username must be at least 3 characters and contain only letters, numbers, and underscores", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             progressBar?.visibility = View.VISIBLE
