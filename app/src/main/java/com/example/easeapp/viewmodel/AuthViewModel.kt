@@ -45,9 +45,9 @@ class AuthViewModel(
         }
     }
 
-    fun register(context: Context, username: String, email: String, password: String, bitmap: Bitmap?) {
+    fun register(context: Context, username: String, email: String, password: String, bitmap: Bitmap?, gender: String?, phoneNumber: String?) {
         viewModelScope.launch {
-            authRepo.registerUser(context, username, email, password, bitmap) { success, error ->
+            authRepo.registerUser(context, username, email, password, bitmap, gender, phoneNumber) { success, error ->
                 if (success) {
                     _authState.postValue(Result.success(true))
                 } else {

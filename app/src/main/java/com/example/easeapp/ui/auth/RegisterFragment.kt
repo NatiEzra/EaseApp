@@ -12,9 +12,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -49,6 +52,8 @@ class RegisterFragment : Fragment() {
     private lateinit var confirmPasswordField: TextView
     private lateinit var registerButton: Button
     private lateinit var name: TextView
+    private lateinit var genderRadioGroup: RadioGroup
+    private lateinit var phoneField: EditText
     private lateinit var editIcon: ImageView
     private lateinit var profileImage: ImageView
     private var cameraLauncher: ActivityResultLauncher<Void?>? = null
@@ -94,6 +99,8 @@ class RegisterFragment : Fragment() {
         name = view.findViewById(R.id.username_field)
         editIcon = view.findViewById<ImageView>(R.id.edit_profile_image_icon)
         profileImage = view.findViewById<ImageView>(R.id.profile_image_register)
+        genderRadioGroup = view.findViewById(R.id.gender_radio_group)
+        phoneField = view.findViewById(R.id.phone_field)
         authViewModel.authState.observe(viewLifecycleOwner) { result ->
             result.onSuccess {
                 val progressBar = view?.findViewById<ProgressBar>(R.id.registerProgressBar)
@@ -192,8 +199,17 @@ class RegisterFragment : Fragment() {
                 Toast.makeText(context, "Username must be at least 3 characters and contain only letters, numbers, and underscores", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+            val phone = phoneField.text.toString()
+
+            val selectedGenderId = genderRadioGroup.checkedRadioButtonId
+            val gender = when(selectedGenderId) {
+                R.id.radio_male -> "male"
+                R.id.radio_female -> "female"
+                R.id.radio_other -> "other"
+                else -> ""
+            }
             progressBar?.visibility = View.VISIBLE
-            authViewModel.register(requireContext(), username, email, password, bitmap)
+            authViewModel.register(requireContext(), username, email, password, bitmap, gender, phone)
 
         }
     }
@@ -216,5 +232,14 @@ class RegisterFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+    override fun onResume() {
+        super.onResume()
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        activity?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
     }
 }

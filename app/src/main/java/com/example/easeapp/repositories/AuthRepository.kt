@@ -30,21 +30,25 @@ class AuthRepository {
         email: String,
         password: String,
         bitmap: Bitmap?,
+        gender: String?,
+        phoneNumber: String?,
         onComplete: (Boolean, String?) -> Unit
     ) {
         val imageFile = bitmap?.let { bitmapToFile(it, context) }
         val usernamePart = username.toRequestBody("text/plain".toMediaTypeOrNull())
         val emailPart = email.toRequestBody("text/plain".toMediaTypeOrNull())
         val passwordPart = password.toRequestBody("text/plain".toMediaTypeOrNull())
+        val genderPart = gender?.toRequestBody("text/plain".toMediaTypeOrNull())
+        val phoneNumberPart = phoneNumber?.toRequestBody("text/plain".toMediaTypeOrNull())
 
         val call = if (imageFile != null) {
             val requestFile = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
             val multipartBody = MultipartBody.Part.createFormData("profilePicture", imageFile.name, requestFile)
-            AuthApiClient.create(context).registerUser(usernamePart, emailPart, passwordPart, multipartBody)
+            AuthApiClient.create(context).registerUser(usernamePart, emailPart, passwordPart, genderPart, phoneNumberPart,  multipartBody)
         } else {
             val emptyRequestFile = "".toRequestBody("text/plain".toMediaTypeOrNull())
             val emptyPart = MultipartBody.Part.createFormData("profilePicture", "", emptyRequestFile)
-            AuthApiClient.create(context).registerUser(usernamePart, emailPart, passwordPart, emptyPart)
+            AuthApiClient.create(context).registerUser(usernamePart, emailPart, passwordPart,genderPart, phoneNumberPart, emptyPart)
         }
 
         call.enqueue(object : Callback<RegisterResponse> {

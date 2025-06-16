@@ -22,6 +22,8 @@ interface AuthApi {
         @Part("username") username: RequestBody,
         @Part("email") email: RequestBody,
         @Part("password") password: RequestBody,
+        @Part("gender") gender: RequestBody?,
+        @Part("phoneNumber") phoneNumber: RequestBody?,
         @Part profilePicture: MultipartBody.Part
     ): Call<RegisterResponse>
 
