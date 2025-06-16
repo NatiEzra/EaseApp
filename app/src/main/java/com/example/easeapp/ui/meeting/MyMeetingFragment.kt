@@ -118,9 +118,11 @@ class MyMeetingFragment : Fragment() {
         btnChange.setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle("Change Appointment")
-                .setMessage("\"Are you sure you want to change your appointment? \" +\n" +
-                        "            \"This will cancel your current booking, and if you change your mind, \" +\n" +
-                        "            \"you’ll need to reschedule it.\"")
+                .setMessage("""
+                    Are you sure you want to change your appointment?
+                    This will cancel your current booking, and if you change your mind,
+                    you'll need to reschedule it.
+                    """.trimIndent())
                 .setPositiveButton("Yes") { _, _ ->
                     AppointmentRepository.shared.deleteAppointment(requireContext(), appointment._id) { success, message ->
                         if (success) {
