@@ -13,8 +13,7 @@ import com.example.ease.R
 import java.text.SimpleDateFormat
 import java.util.*
 import com.example.easeapp.model.ChatMessage
-
-
+import com.squareup.picasso.Picasso
 
 class ChatMessageAdapter(private val messages: MutableList<ChatMessage>) :
     RecyclerView.Adapter<ChatMessageAdapter.ChatMessageViewHolder>() {
@@ -22,7 +21,7 @@ class ChatMessageAdapter(private val messages: MutableList<ChatMessage>) :
     inner class ChatMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val messageTextView: TextView = itemView.findViewById(R.id.messageText)
         val messageTimeView: TextView = itemView.findViewById(R.id.messageTime)
-        val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
+//        val profileImage: ImageView = itemView.findViewById(R.id.profileImage)
         val rootLayout: LinearLayout = itemView.findViewById(R.id.rootLayout)
         val bubbleLayout: LinearLayout = itemView.findViewById(R.id.bubbleLayout)
 
@@ -40,12 +39,13 @@ class ChatMessageAdapter(private val messages: MutableList<ChatMessage>) :
         holder.messageTextView.text = message.text
         holder.messageTimeView.text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(message.timestamp))
 
+
         if (message.fromMe) {
             holder.rootLayout.gravity = Gravity.END
 
             holder.rootLayout.removeAllViews()
             holder.rootLayout.addView(holder.bubbleLayout)
-            holder.rootLayout.addView(holder.profileImage)
+//            holder.rootLayout.addView(holder.profileImage)
 
             holder.bubbleLayout.setBackgroundResource(R.drawable.bg_chat_bubble_user)
             holder.messageTextView.setTextColor(Color.BLACK)
@@ -54,7 +54,7 @@ class ChatMessageAdapter(private val messages: MutableList<ChatMessage>) :
             holder.rootLayout.gravity = Gravity.START
 
             holder.rootLayout.removeAllViews()
-            holder.rootLayout.addView(holder.profileImage)
+//            holder.rootLayout.addView(holder.profileImage)
             holder.rootLayout.addView(holder.bubbleLayout)
 
             holder.bubbleLayout.setBackgroundResource(R.drawable.bg_chat_bubble)
@@ -62,8 +62,6 @@ class ChatMessageAdapter(private val messages: MutableList<ChatMessage>) :
         }
 
     }
-
-
 
     override fun getItemCount(): Int = messages.size
 

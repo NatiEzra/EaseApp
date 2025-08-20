@@ -38,6 +38,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.ease.model.UserRepository
 import androidx.navigation.NavOptions
+import jp.wasabeef.picasso.transformations.CropCircleTransformation
 
 class MeetingChatFragment : Fragment() {
 
@@ -219,7 +220,10 @@ class MeetingChatFragment : Fragment() {
                             val doctorImageView = view?.findViewById<ImageView>(R.id.doctorImage)
                             val doctorNameTextView = view?.findViewById<TextView>(R.id.doctorName)
                             if (doctorNameTextView!= null && doctorImageView != null) {
-                                Picasso.get().load(userDetails.profilePicture).into(doctorImageView)
+                                Picasso.get()
+                                    .load(userDetails.profilePicture)
+                                    .transform(CropCircleTransformation())
+                                    .into(doctorImageView)
                                 doctorNameTextView.text = userDetails.username
                                 doctorIdForThisChat = userDetails._id
                             }
@@ -290,9 +294,10 @@ class MeetingChatFragment : Fragment() {
                 val timestampString = data.getString("timestamp")
                 val formatter = java.time.format.DateTimeFormatter.ISO_INSTANT
                 val timestamp = java.time.Instant.from(formatter.parse(timestampString)).toEpochMilli()
+                val profileImage = data.optString("profileImageUrl", null)
 
                 activity?.runOnUiThread {
-                    addMessageToUI(msg, fromMe = false, timestamp = timestamp, profileImageUrl = null)
+                    addMessageToUI(msg, fromMe = false, timestamp = timestamp, profileImageUrl = profileImage)
                 }
             }
         }

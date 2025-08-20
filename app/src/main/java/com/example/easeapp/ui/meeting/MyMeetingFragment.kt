@@ -17,6 +17,7 @@ import com.example.ease.R
 import com.example.easeapp.model.requests.AppointmentDetails
 import com.example.easeapp.repositories.AppointmentRepository
 import com.squareup.picasso.Picasso
+import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -113,6 +114,7 @@ class MyMeetingFragment : Fragment() {
             .load(imageUrl)
             .placeholder(R.drawable.account)
             .error(R.drawable.account)
+            .transform(CropCircleTransformation())
             .into(doctorImage)
 
         btnChange.setOnClickListener {

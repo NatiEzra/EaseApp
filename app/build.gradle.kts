@@ -102,7 +102,7 @@ dependencies {
     implementation (libs.moshi.kotlin.v1140)
     implementation (libs.moshi.adapters)
     implementation (libs.converter.moshi)
-
-
+    testImplementation (libs.junit)
+    androidTestImplementation (libs.androidx.junit.v115)
 
 }
