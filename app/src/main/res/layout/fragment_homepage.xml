@@ -80,7 +80,7 @@
                         android:layout_below="@id/diaryIcon"
                         android:layout_marginTop="8dp"
                         android:text="Diary"
-                        android:textSize="20sp"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
 
                     <ImageView
@@ -124,7 +124,7 @@
                         android:layout_below="@id/emergencyIcon"
                         android:layout_marginTop="8dp"
                         android:text="Emergency"
-                        android:textSize="20sp"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
 
                     <ImageView
@@ -168,7 +168,7 @@
                         android:layout_below="@id/chatIcon"
                         android:layout_marginTop="8dp"
                         android:text="Chat"
-                        android:textSize="20sp"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
 
                     <ImageView

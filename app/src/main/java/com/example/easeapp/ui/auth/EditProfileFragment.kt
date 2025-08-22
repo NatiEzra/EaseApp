@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -39,6 +40,7 @@ import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 private const val ARG_PARAM1 = "param1"
@@ -156,6 +158,16 @@ class editProfileFragment : Fragment() {
             val newDate = dateTextView.text.toString().trim()
             val newGender = genderSpinner.selectedItem.toString()
 
+            val dateFormat = SimpleDateFormat("MM/dd/yy", Locale.getDefault())
+            val parsedDate = dateFormat.parse(newDate)
+
+            val calendar = Calendar.getInstance().apply {
+                time = parsedDate ?: Date()
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
+
+            val newDatePlusOne = dateFormat.format(calendar.time)
+
             val bitmap: Bitmap? = if (addedImageToProfile) {
                 (profileImage.drawable as? BitmapDrawable)?.bitmap
             } else null
@@ -165,7 +177,7 @@ class editProfileFragment : Fragment() {
                 if (currentUser != null) {
                     val nameBody = newName.toRequestBody("text/plain".toMediaTypeOrNull())
                     val phoneBody = newPhone.toRequestBody("text/plain".toMediaTypeOrNull())
-                    val dobBody = newDate.toRequestBody("text/plain".toMediaTypeOrNull())
+                    val dobBody = newDatePlusOne.toRequestBody("text/plain".toMediaTypeOrNull())
                     val genderBody = newGender.toRequestBody("text/plain".toMediaTypeOrNull())
 
                     val imagePart: MultipartBody.Part? = if (bitmap != null) {
